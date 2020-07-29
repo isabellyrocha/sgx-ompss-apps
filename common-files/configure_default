@@ -1,0 +1,21 @@
+#!/bin/bash
+
+DIRNAME=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
+
+echo \ \ Using default configuration file: 
+echo \ \ $BASH_SOURCE
+
+export OMPSS_HOME=
+export EXTRAE_HOME=
+export PARAVER_HOME=
+export TEMANEJO_HOME=
+export MPI_LIB_DIR=
+export MPI_INC_DIR=
+export MPIRUN_COMMAND="mpirun"
+export MKL_LIB_DIR="/home/ubuntu/intel/mkl/lib/intel64"
+export MKL_INC_DIR="/home/ubuntu/intel/mkl/include"
+export ATLAS_LIB_DIR=/home/xteruel/Applications/atlas-3.10.3/lib/
+export ATLAS_INC_DIR=
+
+touch $DIRNAME/sched-job-smp
+touch $DIRNAME/sched-job-mpi
