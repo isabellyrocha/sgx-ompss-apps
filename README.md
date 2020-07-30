@@ -1,1 +1,1 @@
-# ompss-sgx-apps
+# Ompss + SGX applications
