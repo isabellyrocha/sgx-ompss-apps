@@ -234,7 +234,7 @@ void init(unsigned long argc, char **argv, unsigned long * N_p, unsigned long * 
         C[i] = (float *) malloc(BSIZE*BSIZE*sizeof(float));
     }
 
-  // Convert to blocks
+    // Convert to blocks
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
             ((float * (*) [DIM])A)[i/BSIZE][j/BSIZE][(i%BSIZE)*BSIZE+j%BSIZE] = Alin[j*N+i];
