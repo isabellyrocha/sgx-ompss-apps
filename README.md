@@ -1,1 +1,1 @@
-# Ompss + SGX applications bed
+# Ompss + SGX applications
