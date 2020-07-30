@@ -195,16 +195,13 @@ void init(unsigned long argc, char **argv, unsigned long * N_p, unsigned long * 
     char UPLO='n';
     float FZERO=0.0;
 
-  if (argc==3)
-  {
-    DIM=atoi(argv[1]);
-    BSIZE=atoi(argv[2]);
-  }
-  else
-  {
-    printf("usage: %s DIM BSIZE\n",argv[0]);
-    exit(0);
-  }
+    if (argc==3) {
+        DIM=atoi(argv[1]);
+        BSIZE=atoi(argv[2]);
+    } else {
+        printf("usage: %s DIM BSIZE\n",argv[0]);
+        exit(0);
+    }
 
     // matrix init
     unsigned long N=BSIZE*DIM;
