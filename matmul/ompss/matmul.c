@@ -7,7 +7,7 @@
 #include <time.h>
 #include "omp.h"
 
-#define BSIZE 128
+//#define BSIZE 128
 
 #pragma omp task in([NB][NB]A, [NB][NB]B) inout([NB][NB]C)
 void matmul(double  *A, double *B, double *C, unsigned long NB)
@@ -73,21 +73,22 @@ void fill_random(double *Alin, int NN)
   }
 }
 
-void init (unsigned long argc, char **argv, unsigned long * N_p, unsigned long * DIM_p)
+void init (unsigned long argc, char **argv, unsigned long * N_p, unsigned long * DIM_p, unsigned long *BSIZE_p)
 {
   unsigned long ISEED[4] = {0,0,0,1};
   unsigned long IONE=1;
-  unsigned long DIM;
+  unsigned long DIM, BSIZE;
   char UPLO='n';
   double FZERO=0.0;
 
-  if (argc==2)
+  if (argc==3)
   {
     DIM=atoi(argv[1]);
+    BSIZE=atoi(argv[2]);
   }
   else
   {
-    printf("usage: %s DIM\n",argv[0]);
+    printf("usage: %s DIM BSIZE\n",argv[0]);
     exit(0);
   }
 
@@ -98,6 +99,7 @@ void init (unsigned long argc, char **argv, unsigned long * N_p, unsigned long *
 
   *N_p=N;
   *DIM_p=DIM;
+  *BSIZE_p=BSIZE;
 
   // linear matrix
   double *Alin = (double *) malloc(NN * sizeof(double));
@@ -135,14 +137,14 @@ void init (unsigned long argc, char **argv, unsigned long * N_p, unsigned long *
 int main(int argc, char *argv[])
 {
   // local vars
-  unsigned long NB, N, DIM;
+  unsigned long NB, N, DIM, BSIZE;
   
   struct timeval start;
   struct timeval stop;
   unsigned long elapsed;
 
   // application inicializations
-  init(argc, argv, &N, &DIM);
+  init(argc, argv, &N, &DIM, &BSIZE);
 
   // compute with CellSs
   compute(&start, &stop,(unsigned long) BSIZE, DIM, (void *)A, (void *)B, (void *)C);
