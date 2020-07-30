@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
   elapsed += stop.tv_usec - start.tv_usec;
 // threads
   printf("threads: ");
-  printf ("%d;\t", omp_get_num_threads() );
+  printf ("%d;\t\n", omp_get_num_threads() );
 // time in usecs
   printf("time: ");
   printf ("%lu;\t", elapsed);

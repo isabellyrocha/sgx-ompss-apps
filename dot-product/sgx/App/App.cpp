@@ -277,6 +277,15 @@ void ocall_print_string(const char *str)
     printf("%s", str);
 }
 
+static void initialize(long length, double data[length])
+{
+    for (long i = 0; i < length; i++) {
+        data[i] = ((double)rand()/(double)RAND_MAX);
+    }
+}
+
+long N;
+long CHUNK_SIZE;
 /* Application entry */
 int SGX_CDECL main(int argc, char *argv[])
 {
@@ -307,41 +316,78 @@ int SGX_CDECL main(int argc, char *argv[])
     unsigned long elapsed;
 
     // application inicializations
-    init(argc, argv, &N, &DIM, &BSIZE);
+//    init(argc, argv, &N, &DIM, &BSIZE);
+
+
+    if (argc != 3) {
+        fprintf(stderr, "Usage: %s <vector size in K> <chunk size in K> \n", argv[0]);
+        return 1;
+    }
+
+    N = atol(argv[1]) * 1024L;
+    CHUNK_SIZE = atol(argv[2]) * 1024L;
+
+    double *A = (double *) malloc(N*sizeof(double));
+    double *B = (double *) malloc(N*sizeof(double));
+
+    initialize(N, A);
+    initialize(N, B);
 
     {
-    unsigned i, j, k;
+    //unsigned i, j, k;
 
     gettimeofday(&start,NULL);
     double s = (double)start.tv_sec + (double)start.tv_usec * .000001;
 
-    for (i = 0; i < DIM; i++)
-        for (j = 0; j < DIM; j++)
-            for (k = 0; k < DIM; k++) {
-                #pragma omp task in(A[i][k], B[k][j]) inout(C[i][j]) no_copy_deps
-                {
-                ecall_matmul_u (global_eid, &A[i][k], &B[k][j], &C[i][j], BSIZE);
-                }
-            }
+    long actual_size;
+    int j;
+    double result;
 
+    const long N_CHUNKS = N/CHUNK_SIZE + (N % CHUNK_SIZE != 0);
+    double *C = (double *) malloc(N_CHUNKS*sizeof(double));
+
+    result=0.0;
+    j=0;
+    for (long i=0; i<N; i+=CHUNK_SIZE) {
+
+        actual_size = (N - i >= CHUNK_SIZE) ? CHUNK_SIZE : N - i;
+
+        // OMPSS: What are the 2 inputs and the in/out data for this task ?
+        #pragma omp task in( A[i;actual_size], B[i; actual_size] ) inout( C[j;1] )
+        {
+        //    C[j]=0;
+        //    for (long ii=0; ii<actual_size; ii++)
+        //        C[j]+= A[i+ii] * B[i+ii];
+        ecall_dot_prod(global_eid, A, B, C, i, j, actual_size);
+        }
+
+        // OMPSS: This task depends on an single element of C and will resultumulate the result on result.
+        #pragma omp task label( increment ) firstprivate( j ) in( C[j;1] ) commutative( result )
+        result += C[j];
+
+        j++;
+    }
+
+    // OMPSS: We must make sure that all computations have ended before returning a value
     #pragma omp taskwait
+
     gettimeofday(&stop,NULL);
     double e =(double)stop.tv_sec + (double)stop.tv_usec * .000001;
 
     printf("\nMarking starting point.. Timestamp: %f.", s);
     printf("\nMarking starting point.. Timestamp: %f.", e);
-//    printf("\nInference completed in %f seconds.", (e-s));
+    printf("\nInference completed in %f seconds.", (e-s));
 
-    print_matrix2(&C[DIM-1][DIM-1]);
     elapsed = 1000000 * (stop.tv_sec - start.tv_sec);
     elapsed += stop.tv_usec - start.tv_usec;
 
     // threads
     #ifdef OMP
         printf("threads: ");
-        printf ("%d;\t", omp_get_num_threads() );
+        printf ("%d;\t\n", omp_get_num_threads() );
     #endif
-   
+
+    printf("\nResult of Dot product i= %le\n", result);
     // time in usecs
     printf("time: ");
     printf ("%lu;\t", elapsed);
