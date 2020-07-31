@@ -147,107 +147,12 @@ void print_error_message(sgx_status_t ret)
     	printf("Error code is 0x%X. Please refer to the \"Intel SGX SDK Developer Reference\" for more details.\n", ret);
 }
 
-float **A;
-float **B;
-float **C;
-
-static void print_matrix(float *A[8][8])
-{
-    int i, j;
-    for (i=0; i < 2 ; i++ ) {
-        for (j=0; j < 2 ; j++ )
-            printf ("%d, %d: %f ", i, j, (*A)[i][j]);
-        printf ("\n");
-    }
-}
-
-static void print_matrix2(float *A)
-{
-    int i, j;
-    for (i=0; i < 2 ; i++ ) {
-        for (j=0; j < 2 ; j++ )
-            printf ("   %d, %d: %f ", i, j, A[i*128+j]);
-    printf ("\n");
-  }
-}
-
 static double timestemp() {
     struct timeval time;
     if (gettimeofday(&time,NULL)){
         return 0;
     }
     return (double)time.tv_sec + (double)time.tv_usec * .000001;
-}
-
-void fill_random(float *Alin, int NN)
-{
-    int i;
-    for (i = 0; i < NN; i++) {
-        Alin[i]=((float)rand())/((float)RAND_MAX);
-    }
-}
-
-void init(unsigned long argc, char **argv, unsigned long * N_p, unsigned long * DIM_p, unsigned long * BSIZE_p)
-{
-    unsigned long ISEED[4] = {0,0,0,1};
-    unsigned long IONE=1;
-    unsigned long DIM, BSIZE;
-    char UPLO='n';
-    float FZERO=0.0;
-
-    if (argc==3) {
-        DIM=atoi(argv[1]);
-        BSIZE=atoi(argv[2]);
-    } else {
-        printf("usage: %s DIM BSIZE\n",argv[0]);
-        exit(0);
-    }
-
-    // matrix init
-    unsigned long N=BSIZE*DIM;
-    unsigned long NN=N*N;
-    int i, j;
-
-    *N_p=N;
-    *DIM_p=DIM;
-    *BSIZE_p=BSIZE;
-
-    // linear matrix
-    float *Alin = (float *) malloc(NN * sizeof(float));
-    float *Blin = (float *) malloc(NN * sizeof(float));
-    float *Clin = (float *) malloc(NN * sizeof(float));
-
-    // fill the matrix with random values
-    srand(0);
-    fill_random(Alin,NN);
-    fill_random(Blin,NN);
-    for (i=0; i < NN; i++)
-        Clin[i]=0.0;
-
-    A = (float **) malloc(DIM*DIM*sizeof(float *));
-    B = (float **) malloc(DIM*DIM*sizeof(float *));
-    C = (float **) malloc(DIM*DIM*sizeof(float *));
-
-    for (i = 0; i < DIM*DIM; i++) {
-        A[i] = (float *) malloc(BSIZE*BSIZE*sizeof(float));
-        B[i] = (float *) malloc(BSIZE*BSIZE*sizeof(float));
-        C[i] = (float *) malloc(BSIZE*BSIZE*sizeof(float));
-    }
-
-    // Convert to blocks
-    for (i = 0; i < N; i++) {
-        for (j = 0; j < N; j++) {
-            ((float * (*) [DIM])A)[i/BSIZE][j/BSIZE][(i%BSIZE)*BSIZE+j%BSIZE] = Alin[j*N+i];
-            ((float * (*) [DIM])B)[i/BSIZE][j/BSIZE][(i%BSIZE)*BSIZE+j%BSIZE] = Blin[j*N+i];
-            ((float * (*) [DIM])C)[i/BSIZE][j/BSIZE][(i%BSIZE)*BSIZE+j%BSIZE] = Clin[j*N+i];
-        }
-    }
-
-    print_matrix((float *(*) [8])C);
-
-    free(Alin);
-    free(Blin);
-    free(Clin);
 }
 
 /* Initialize the enclave:
@@ -284,8 +189,8 @@ static void initialize(long length, double data[length])
     }
 }
 
-long N;
-long CHUNK_SIZE;
+//long N;
+//long CHUNK_SIZE;
 /* Application entry */
 int SGX_CDECL main(int argc, char *argv[])
 {
@@ -310,7 +215,7 @@ int SGX_CDECL main(int argc, char *argv[])
     ecall_libcxx_functions();
     ecall_thread_functions();
 
-    unsigned long NB, BSIZE, N, DIM;
+    unsigned long N, CHUNK_SIZE;
     struct timeval start;
     struct timeval stop;
     unsigned long elapsed;
@@ -400,7 +305,7 @@ int SGX_CDECL main(int argc, char *argv[])
     
     printf("Info: SampleEnclave successfully returned.\n");
 
-    printf("Enter a character before exit ...\n");
-    getchar();
+//    printf("Enter a character before exit ...\n");
+//    getchar();
     return 0;
 }
