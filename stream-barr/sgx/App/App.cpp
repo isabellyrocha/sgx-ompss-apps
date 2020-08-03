@@ -138,14 +138,14 @@ static double	avgtime[4] = {0}, maxtime[4] = {0},
 		mintime[4] = {FLT_MAX,FLT_MAX,FLT_MAX,FLT_MAX};
 
 static char	*label[4] = {"Copy:      ", "Scale:     ",
-    "Add:       ", "Triad:     "};
+                             "Add:       ", "Triad:     "};
 
 static double	bytes[4] = {
     2 * sizeof(double) * N,
     2 * sizeof(double) * N,
     3 * sizeof(double) * N,
     3 * sizeof(double) * N
-    };
+};
 
 extern double mysecond();
 extern void checkSTREAMresults();
@@ -167,14 +167,6 @@ void init_task(double *a, double *b, double *c, int bs)
 		a[j] = 2.0E0 * a[j];
   	}
 }
-
-//void tuned_initialization()
-//{
-//	int j;
- //       for (j=0; j<N; j+=BSIZE)
-//Assumes N is multiple of BSIZE
-//            init_task (&a[j], &b[j], &c[j], BSIZE);
-//}
 
 /* Global EID shared by multiple threads */
 sgx_enclave_id_t global_eid = 0;
@@ -355,26 +347,14 @@ int SGX_CDECL main(int argc, char *argv[])
     struct timeval stop;
     unsigned long elapsed;
 
-    // application inicializations
-//    init(argc, argv, &N, &DIM, &BSIZE);
-
-
-//    if (argc != 3) {
-//        fprintf(stderr, "Usage: %s <vector size in K> <chunk size in K> \n", argv[0]);
-//        return 1;
-//    }
-
-
     {
-    //unsigned i, j, k;
-
     gettimeofday(&start,NULL);
     double s = (double)start.tv_sec + (double)start.tv_usec * .000001;
 
 /* ------------------------------------------------------------------------------------------------------------------------*/
 
 
-    unsigned long BSIZE;
+    unsigned long       BSIZE;
     int			quantum, checktick();
     int			BytesPerWord;
     register int	j, k;
@@ -388,8 +368,7 @@ int SGX_CDECL main(int argc, char *argv[])
     printf("STREAM version $Revision: 5.8 $\n");
     printf(HLINE);
     BytesPerWord = sizeof(double);
-    printf("This system uses %d bytes per DOUBLE PRECISION word.\n",
-	BytesPerWord);
+    printf("This system uses %d bytes per DOUBLE PRECISION word.\n", BytesPerWord);
 
     printf(HLINE);
     printf("Array size = %d, Offset = %d\n" , N, OFFSET);
@@ -406,64 +385,41 @@ int SGX_CDECL main(int argc, char *argv[])
 #ifdef SMPSs
     printf(HLINE);
     printf("CSS_NUM_CPUS %s \n", getenv("CSS_NUM_CPUS"));
-    k = atoi (getenv ("CSS_NUM_CPUS"));
-    printf ("Number of CSS Threads = %i\n",k);
+    k = atoi(getenv ("CSS_NUM_CPUS"));
+    printf("Number of CSS Threads = %i\n",k);
 #endif
 #ifdef CellSs
     printf(HLINE);
-    k = atoi (getenv ("CSS_NUM_SPUS"));
-    printf ("Number of CSS Threads = %i\n",k);
+    k = atoi(getenv ("CSS_NUM_SPUS"));
+    printf("Number of CSS Threads = %i\n",k);
 #endif
 #ifdef CellSs_tracing
     printf(HLINE);
-    k = atoi (getenv ("CSS_NUM_SPUS"));
-    printf ("Number of CSS Threads = %i\n",k);
+    k = atoi(getenv ("CSS_NUM_SPUS"));
+    printf("Number of CSS Threads = %i\n",k);
 #endif
 
     printf(HLINE);
 
-    printf ("Printing one line per active thread....\n");
+    printf("Printing one line per active thread....\n");
 
-    /* Get initial value for system clock. */
-
-/*
-    for (j=0; j<N; j++) {
-	a[j] = 1.0;
-	b[j] = 2.0;
-	c[j] = 0.0;
-	}
-
-*/
-total_time = mysecond();
-//    tuned_initialization();
-//void tuned_initialization()
-//{
-//        int j;
-
-//        double* a = (double *) malloc(N*sizeof(double));
-//        double* b = (double *) malloc(N*sizeof(double));
-//        double* c = (double *) malloc(N*sizeof(double));
-        for (j=0; j<N; j+=BSIZE)
-//Assumes N is multiple of BSIZE
-            #pragma omp task out ([BSIZE]a, [BSIZE]b, [BSIZE]c)
-            {
-            ecall_init_task(global_eid, &a[j], &b[j], &c[j], BSIZE);
-            }
-//}
-
+    total_time = mysecond();
+    for (j=0; j<N; j+=BSIZE)
+        //Assumes N is multiple of BSIZE
+        #pragma omp task out ([BSIZE]a, [BSIZE]b, [BSIZE]c)
+        {
+        ecall_init_task(global_eid, &a[j], &b[j], &c[j], BSIZE);
+        }
 
 #pragma omp taskwait
-
     /*	--- MAIN LOOP --- repeat test cases NTIMES times --- */
-
     scalar = 3.0;
-    for (k=0; k<NTIMES; k++)
-	{
+    for (k=0; k<NTIMES; k++) {
 	times[0][k] = mysecond();
 #ifdef TUNED
         tuned_STREAM_Copy(BSIZE);
 #else
-printf("WARNING: This version is a port to StarSs that only works for TUNED option \n");
+        printf("WARNING: This version is a port to StarSs that only works for TUNED option \n");
 	for (j=0; j<N; j++)
 	    c[j] = a[j];
 #endif
@@ -499,20 +455,18 @@ printf("WARNING: This version is a port to StarSs that only works for TUNED opti
 #endif
 #pragma omp  taskwait
 	times[3][k] = mysecond() - times[3][k];
-	}
-total_time = mysecond() - total_time;
+    }
+    total_time = mysecond() - total_time;
 #pragma omp taskwait
     /*	--- SUMMARY --- */
 
-    for (k=1; k<NTIMES; k++) /* note -- skip first iteration */
-	{
-	for (j=0; j<4; j++)
-	    {
+    for (k=1; k<NTIMES; k++) { /* note -- skip first iteration */ 
+	for (j=0; j<4; j++) {
 	    avgtime[j] = avgtime[j] + times[j][k];
 	    mintime[j] = MIN(mintime[j], times[j][k]);
 	    maxtime[j] = MAX(maxtime[j], times[j][k]);
-	    }
 	}
+    }
 
 
     printf("Function      Rate (MB/s)   Avg time     Min time     Max time\n");
@@ -565,8 +519,6 @@ total_time = mysecond() - total_time;
     
     printf("Info: SampleEnclave successfully returned.\n");
 
-//    printf("Enter a character before exit ...\n");
-//    getchar();
     return 0;
 }
 
@@ -674,7 +626,7 @@ void checkSTREAMresults ()
 		printf ("Solution Validates\n");
 	}
 }
-#pragma omp task in ([bs]a) out ([bs]c)
+
 void copy_task(double *a, double *c, int bs)
 {
 	int j;
@@ -686,12 +638,12 @@ void tuned_STREAM_Copy(int bs)
 {
 	int j;
         for (j=0; j<N; j+=bs)
-//Assumes N is multiple of 100
-            copy_task (&a[j], &c[j], bs);
+            //Assumes N is multiple of 100
+            #pragma omp task in ([bs]a) out ([bs]c)
+            ecall_copy_task(global_eid, &a[j], &c[j], bs);
 }
 
-#pragma omp task in ([bs]c ) out ([bs]b)
-void scale_task (double *b, double *c, double scalar, int bs)
+void scale_task(double *b, double *c, double scalar, int bs)
 {
 	int j;
 	for (j=0; j < bs; j++)
@@ -701,13 +653,13 @@ void scale_task (double *b, double *c, double scalar, int bs)
 void tuned_STREAM_Scale(double scalar, int bs)
 {
 	int j;
-//Assumes N is multiple of 100
+        //Assumes N is multiple of 100
 	for (j=0; j<N; j+=bs)
-	       scale_task (&b[j], &c[j], scalar, bs);
+               #pragma omp task in ([bs]c ) out ([bs]b)
+	       ecall_scale_task(global_eid, &b[j], &c[j], scalar, bs);
 }
 
-#pragma omp task in ([bs]a, [bs]b) out ([bs]c)
-void add_task (double *a, double *b, double *c, int bs)
+void add_task(double *a, double *b, double *c, int bs)
 {
 	int j;
 	for (j=0; j < bs; j++)
@@ -717,13 +669,13 @@ void add_task (double *a, double *b, double *c, int bs)
 void tuned_STREAM_Add(int bs)
 {
 	int j;
-//Assumes N is multiple of 100
+        //Assumes N is multiple of 100
 	for (j=0; j<N; j+=bs)
-	    add_task(&a[j], &b[j], &c[j], bs);
+            #pragma omp task in ([bs]a, [bs]b) out ([bs]c)
+	    ecall_add_task(global_eid, &a[j], &b[j], &c[j], bs);
 }
 
-#pragma omp task in ([bs]b, [bs]c) out ([bs]a)
-void triad_task (double *a, double *b, double *c, double scalar, int bs)
+void triad_task(double *a, double *b, double *c, double scalar, int bs)
 {
 	int j;
 	for (j=0; j < bs; j++)
@@ -734,7 +686,8 @@ void triad_task (double *a, double *b, double *c, double scalar, int bs)
 void tuned_STREAM_Triad(double scalar, int bs)
 {
 	int j;
-//Assumes N is multiple of 100
+        //Assumes N is multiple of 100
 	for (j=0; j<N; j+=bs)
-	    triad_task (&a[j], &b[j], &c[j], scalar, bs);
+            #pragma omp task in ([bs]b, [bs]c) out ([bs]a)
+	    ecall_triad_task(global_eid, &a[j], &b[j], &c[j], scalar, bs);
 }

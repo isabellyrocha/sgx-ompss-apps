@@ -126,3 +126,30 @@ void ecall_init_task(double *a, double *b, double *c, int bs)
   	}
 }
 
+void ecall_copy_task(double *a, double *c, int bs)
+{
+        int j;
+        for (j=0; j < bs; j++)
+                c[j] = a[j];
+}
+
+void ecall_scale_task(double *b, double *c, double scalar, int bs)
+{
+        int j;
+        for (j=0; j < bs; j++)
+            b[j] = scalar*c[j];
+}
+
+void ecall_add_task(double *a, double *b, double *c, int bs)
+{
+        int j;
+        for (j=0; j < bs; j++)
+           c[j] = a[j]+b[j];
+}
+
+void ecall_triad_task(double *a, double *b, double *c, double scalar, int bs)
+{
+        int j;
+        for (j=0; j < bs; j++)
+            a[j] = b[j]+scalar*c[j];
+}
