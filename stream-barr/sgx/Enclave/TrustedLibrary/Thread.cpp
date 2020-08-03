@@ -114,3 +114,15 @@ void ecall_dot_prod(double *a,
             for (long ii=0; ii<CHUNK_SIZE; ii++)
                 c[j]+= a[i+ii] * b[i+ii];
 }
+
+void ecall_init_task(double *a, double *b, double *c, int bs)
+{
+	int j;
+	for (j=0; j < bs; j++){
+	        a[j] = 1.0;
+	        b[j] = 2.0;
+	        c[j] = 0.0;
+		a[j] = 2.0E0 * a[j];
+  	}
+}
+

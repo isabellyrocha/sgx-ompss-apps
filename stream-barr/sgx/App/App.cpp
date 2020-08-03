@@ -151,9 +151,9 @@ extern double mysecond();
 extern void checkSTREAMresults();
 #ifdef TUNED
 extern void tuned_STREAM_Copy(int bs);
-extern void tuned_STREAM_Scale(double scalar);
+extern void tuned_STREAM_Scale(double scalar, int bs);
 extern void tuned_STREAM_Add(int bs);
-extern void tuned_STREAM_Triad(double scalar);
+extern void tuned_STREAM_Triad(double scalar, int bs);
 #endif
 
 //#pragma omp task out ([bs]a, [bs]b, [bs]c)
@@ -439,11 +439,15 @@ total_time = mysecond();
 //void tuned_initialization()
 //{
 //        int j;
+
+//        double* a = (double *) malloc(N*sizeof(double));
+//        double* b = (double *) malloc(N*sizeof(double));
+//        double* c = (double *) malloc(N*sizeof(double));
         for (j=0; j<N; j+=BSIZE)
 //Assumes N is multiple of BSIZE
             #pragma omp task out ([BSIZE]a, [BSIZE]b, [BSIZE]c)
             {
-            init_task (&a[j], &b[j], &c[j], BSIZE);
+            ecall_init_task(global_eid, &a[j], &b[j], &c[j], BSIZE);
             }
 //}
 
@@ -468,7 +472,7 @@ printf("WARNING: This version is a port to StarSs that only works for TUNED opti
 
 	times[1][k] = mysecond();
 #ifdef TUNED
-        tuned_STREAM_Scale(scalar);
+        tuned_STREAM_Scale(scalar, BSIZE);
 #else
 	for (j=0; j<N; j++)
 	    b[j] = scalar*c[j];
@@ -488,7 +492,7 @@ printf("WARNING: This version is a port to StarSs that only works for TUNED opti
 
 	times[3][k] = mysecond();
 #ifdef TUNED
-        tuned_STREAM_Triad(scalar);
+        tuned_STREAM_Triad(scalar, BSIZE);
 #else
 	for (j=0; j<N; j++)
 	    a[j] = b[j]+scalar*c[j];

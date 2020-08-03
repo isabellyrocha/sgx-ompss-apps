@@ -50,5 +50,6 @@ enclave {
                                    [user_check] double *b,
                                    [user_check] double *c,
                                    long i, long j, long CHUNK_SIZE);
+        public void ecall_init_task([user_check] double *a, [user_check] double *b, [user_check] double *c, int bs);
     };
 };
