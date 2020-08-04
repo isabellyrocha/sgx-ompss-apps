@@ -352,7 +352,7 @@ int SGX_CDECL main(int argc, char *argv[])
     int			quantum, checktick();
     int			BytesPerWord;
     register int	j, k;
-    double		scalar, t, times[4][NTIMES], total_time;
+    double		scalar, t, times[4][NTIMES], total_time, total_bytes;
     int                 N = atoi(argv[1])*1024*1024; //128*1024*1024;
     int                 bs = N/atoi(argv[2]); //N/64;
 
@@ -420,7 +420,7 @@ int SGX_CDECL main(int argc, char *argv[])
         //Assumes N is multiple of BSIZE
 #pragma omp task out ([bs]a, [bs]b, [bs]c)
         ecall_init_task(global_eid, &a[j], &b[j], &c[j], bs);
-#pragma omp taskwait
+//#pragma omp taskwait
 
     /*	--- MAIN LOOP --- repeat test cases NTIMES times --- */
 
@@ -439,7 +439,7 @@ int SGX_CDECL main(int argc, char *argv[])
     for (j=0; j<N; j++)
         c[j] = a[j];
 #endif
-#pragma omp taskwait
+//#pragma omp taskwait
     times[0][k] = mysecond() - times[0][k];
     times[1][k] = mysecond();
 #ifdef TUNED
@@ -452,7 +452,7 @@ int SGX_CDECL main(int argc, char *argv[])
     for (j=0; j<N; j++)
         b[j] = scalar*c[j];
 #endif
-#pragma omp taskwait
+//#pragma omp taskwait
     times[1][k] = mysecond() - times[1][k];
     times[2][k] = mysecond();
 #ifdef TUNED
@@ -465,7 +465,7 @@ int SGX_CDECL main(int argc, char *argv[])
 	for (j=0; j<N; j++)
 	    c[j] = a[j]+b[j];
 #endif
-#pragma omp taskwait
+//#pragma omp taskwait
     times[2][k] = mysecond() - times[2][k];
     times[3][k] = mysecond();
 #ifdef TUNED
@@ -478,11 +478,11 @@ int SGX_CDECL main(int argc, char *argv[])
     for (j=0; j<N; j++)
         a[j] = b[j]+scalar*c[j];
 #endif
-#pragma omp  taskwait
+//#pragma omp  taskwait
     times[3][k] = mysecond() - times[3][k];
     }
-    total_time = mysecond() - total_time;
 #pragma omp taskwait
+    total_time = mysecond() - total_time;
     /*	--- SUMMARY --- */
 
     for (k=1; k<NTIMES; k++) /* note -- skip first iteration */ {
@@ -491,19 +491,12 @@ int SGX_CDECL main(int argc, char *argv[])
 	    mintime[j] = MIN(mintime[j], times[j][k]);
 	    maxtime[j] = MAX(maxtime[j], times[j][k]);
 	}
-    }
-
-    printf("Function      Rate (MB/s)   Avg time     Min time     Max time\n");
-    for (j=0; j<4; j++) {
-	avgtime[j] = avgtime[j]/(double)(NTIMES-1);
-
-	printf("%s%11.4f  %11.4f  %11.4f  %11.4f\n", label[j],
-	       1.0E-06 * bytes[j]/mintime[j],
-	       avgtime[j],
-	       mintime[j],
-	       maxtime[j]);
-    }
-
+    
+}
+    total_bytes = bytes[0] + bytes[1] + bytes [2] + bytes [3];
+    printf ("Average Rate (MB/s): %11.4f \n", 1.0E-06 * total_bytes*NTIMES/total_time);
+    printf ("note: in this version, the average rate per function\n");
+    printf ("can not be provided, use tracing to check it\n");
     printf(HLINE);
 
     printf("TOTAL time (including initialization) =  %11.4f seconds\n", total_time);

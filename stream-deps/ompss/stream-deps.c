@@ -33,7 +33,7 @@ void init_task(double *a, double *b, double *c, int bs)
   	}
 }
 
-#pragma omp task in ([bs]a) out ([bs]c)
+//#pragma omp task in ([bs]a) out ([bs]c)
 void copy_task(double *a, double *c, int bs)
 {
         int j;
@@ -41,7 +41,7 @@ void copy_task(double *a, double *c, int bs)
                 c[j] = a[j];
 }
 
-#pragma omp task in ([bs]c ) out ([bs]b)
+//#pragma omp task in ([bs]c ) out ([bs]b)
 void scale_task(double *b, double *c, double scalar, int bs)
 {
         int j;
@@ -49,7 +49,7 @@ void scale_task(double *b, double *c, double scalar, int bs)
             b[j] = scalar*c[j];
 }
 
-#pragma omp task in ([bs]a, [bs]b) out ([bs]c)
+//#pragma omp task in ([bs]a, [bs]b) out ([bs]c)
 void add_task(double *a, double *b, double *c, int bs)
 {
         int j;
@@ -57,7 +57,7 @@ void add_task(double *a, double *b, double *c, int bs)
            c[j] = a[j]+b[j];
 }
 
-#pragma omp task in ([bs]b, [bs]c) out ([bs]a)
+//#pragma omp task in ([bs]b, [bs]c) out ([bs]a)
 void triad_task(double *a, double *b, double *c, double scalar, int bs)
 {
         int j;
@@ -161,10 +161,6 @@ int main(int argc, char *argv[])
 
     printf ("Printing one line per active thread....\n");
 
-//    static double a[N+OFFSET];// = malloc(128*sizeof(double));
-//    static double b[N+OFFSET];// = malloc(128*sizeof(double));
-//    static double c[N+OFFSET];// = malloc(128*sizeof(double));
-
     double __attribute__((aligned(4096))) *a = (double*) malloc(N*sizeof(double));
     double __attribute__((aligned(4096))) *b = (double*) malloc(N*sizeof(double));
     double __attribute__((aligned(4096))) *c = (double*) malloc(N*sizeof(double));
@@ -199,7 +195,7 @@ int main(int argc, char *argv[])
     int j;
     for (j=0; j<N; j+=bs)
     // Assumes N is multiple of 100
-//        #pragma omp task in ([bs]a) out ([bs]c)
+#pragma omp task in ([bs]a) out ([bs]c)
         copy_task(&a[j], &c[j], bs);
 #else
     printf("WARNING: This version is a port to StarSs that only works for TUNED option \n");
@@ -212,7 +208,7 @@ int main(int argc, char *argv[])
     // tuned_STREAM_Scale(a, c, scalar, N, BSIZE);
         //Assumes N is multiple of 100
     for (j=0; j<N; j+=bs)
-//#pragma omp task in ([bs]c ) out ([bs]b)
+#pragma omp task in ([bs]c ) out ([bs]b)
          scale_task(&b[j], &c[j], scalar, bs);
 #else
     for (j=0; j<N; j++)
@@ -224,7 +220,7 @@ int main(int argc, char *argv[])
     // tuned_STREAM_Add(a, b, c, N, BSIZE);
     // Assumes N is multiple of 100
     for (j=0; j<N; j+=bs)
-//#pragma omp task in ([bs]a, [bs]b) out ([bs]c)
+#pragma omp task in ([bs]a, [bs]b) out ([bs]c)
         add_task(&a[j], &b[j], &c[j], bs);
 #else
 	for (j=0; j<N; j++)
@@ -236,7 +232,9 @@ int main(int argc, char *argv[])
     //        tuned_STREAM_Triad(a, b, c, scalar, N, BSIZE);
     //Assumes N is multiple of 100
     for (j=0; j<N; j+=bs)
+#pragma omp task in ([bs]b, [bs]c) out ([bs]a)
         triad_task(&a[j], &b[j], &c[j], scalar, bs);
+
 #else
     for (j=0; j<N; j++)
         a[j] = b[j]+scalar*c[j];
@@ -255,18 +253,7 @@ int main(int argc, char *argv[])
 	    maxtime[j] = MAX(maxtime[j], times[j][k]);
 	}
     }
-
-//    printf("Function      Rate (MB/s)   Avg time     Min time     Max time\n");
-//    for (j=0; j<4; j++) {
-//	avgtime[j] = avgtime[j]/(double)(NTIMES-1);
-
-//	printf("%s%11.4f  %11.4f  %11.4f  %11.4f\n", label[j],
-//	       1.0E-06 * bytes[j]/mintime[j],
-//	       avgtime[j],
-//	       mintime[j],
-//	       maxtime[j]);
-//    }
-
+    
     total_bytes = bytes[0] + bytes[1] + bytes [2] + bytes [3];
     printf ("Average Rate (MB/s): %11.4f \n", 1.0E-06 * total_bytes*NTIMES/total_time);
     printf ("note: in this version, the average rate per function\n");

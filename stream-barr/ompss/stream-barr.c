@@ -56,7 +56,7 @@ void add_task(double *a, double *b, double *c, int bs)
            c[j] = a[j]+b[j];
 }
 
-#pragma omp task in ([bs]b, [bs]c) out ([bs]a)
+//#pragma omp task in ([bs]b, [bs]c) out ([bs]a)
 void triad_task(double *a, double *b, double *c, double scalar, int bs)
 {
         int j;
@@ -236,6 +236,7 @@ int main(int argc, char *argv[])
     //        tuned_STREAM_Triad(a, b, c, scalar, N, BSIZE);
     //Assumes N is multiple of 100
     for (j=0; j<N; j+=bs)
+#pragma omp task in ([bs]b, [bs]c) out ([bs]a)
         triad_task(&a[j], &b[j], &c[j], scalar, bs);
 #else
     for (j=0; j<N; j++)
