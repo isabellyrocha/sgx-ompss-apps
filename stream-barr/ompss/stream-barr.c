@@ -5,6 +5,7 @@
 # include <sys/time.h>
 # include "omp.h"
 
+# define M 20
 # define NTIMES	10
 # define OFFSET	0
 # define HLINE "-------------------------------------------------------------\n"
@@ -314,32 +315,28 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-# define	M	20
-
 int checktick()
 {
     int		i, minDelta, Delta;
     double	t1, t2, timesfound[M];
 
-/*  Collect a sequence of M unique time values from the system. */
-
+    /* Collect a sequence of M unique time values from the system. */
     for (i = 0; i < M; i++) {
 	t1 = mysecond();
 	while( ((t2=mysecond()) - t1) < 1.0E-6 );
   	timesfound[i] = t1 = t2;
     }
 
-/*
- * Determine the minimum difference between these M values.
- * This result will be our estimate (in microseconds) for the
- * clock granularity.
- */
-
+    /*
+     * Determine the minimum difference between these M values.
+     * This result will be our estimate (in microseconds) for the
+     * clock granularity.
+    */
     minDelta = 1000000;
     for (i = 1; i < M; i++) {
 	Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
 	minDelta = MIN(minDelta, MAX(Delta,0));
-	}
+    }
 
     return(minDelta);
 }
@@ -348,9 +345,6 @@ int checktick()
 
 /* A gettimeofday routine to give access to the wall
    clock timer on most UNIX-like systems.  */
-
-#include <sys/time.h>
-
 double mysecond()
 {
         struct timeval tp;
@@ -358,69 +352,4 @@ double mysecond()
 
         i = gettimeofday(&tp,NULL);
         return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
-}
-
-void checkSTREAMresults(double *a, double *b, double *c, int N)
-{
-	double aj,bj,cj,scalar;
-	double asum,bsum,csum;
-	double epsilon;
-	int	j,k;
-
-    /* reproduce initialization */
-	aj = 1.0;
-	bj = 2.0;
-	cj = 0.0;
-    /* a[] is modified during timing check */
-	aj = 2.0E0 * aj;
-    /* now execute timing loop */
-	scalar = 3.0;
-	for (k=0; k<NTIMES; k++)
-        {
-            cj = aj;
-            bj = scalar*cj;
-            cj = aj+bj;
-            aj = bj+scalar*cj;
-        }
-	aj = aj * (double) (N);
-	bj = bj * (double) (N);
-	cj = cj * (double) (N);
-
-	asum = 0.0;
-	bsum = 0.0;
-	csum = 0.0;
-	for (j=0; j<N; j++) {
-		asum += a[j];
-		bsum += b[j];
-		csum += c[j];
-	}
-#ifdef VERBOSE
-	printf ("Results Comparison: \n");
-	printf ("        Expected  : %f %f %f \n",aj,bj,cj);
-	printf ("        Observed  : %f %f %f \n",asum,bsum,csum);
-#endif
-
-#ifndef abs
-#define abs(a) ((a) >= 0 ? (a) : -(a))
-#endif
-	epsilon = 1.e-8;
-
-	if (abs(aj-asum)/asum > epsilon) {
-		printf ("Failed Validation on array a[]\n");
-		printf ("        Expected  : %f \n",aj);
-		printf ("        Observed  : %f \n",asum);
-	}
-	else if (abs(bj-bsum)/bsum > epsilon) {
-		printf ("Failed Validation on array b[]\n");
-		printf ("        Expected  : %f \n",bj);
-		printf ("        Observed  : %f \n",bsum);
-	}
-	else if (abs(cj-csum)/csum > epsilon) {
-		printf ("Failed Validation on array c[]\n");
-		printf ("        Expected  : %f \n",cj);
-		printf ("        Observed  : %f \n",csum);
-	}
-	else {
-		printf ("Solution Validates\n");
-	}
 }
