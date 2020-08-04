@@ -18,30 +18,9 @@
 # endif
 
 #define OmpSs
-//#define SMPSs
-//#define CellSs
-//#define CellSs_tracing
 #define TUNED
-// Definition of BSIZE for CellSs 
-//#ifdef CellSs
-//#define BSIZE 4000
-//#endif
-// Definition of BSIZE for CellSs when using tracing
-//#ifdef CellSs_tracing
-//#define BSIZE 3200 
-//#endif
-//#ifdef SMPSs
-// Definition of BSIZE for SMPSs
-//#define BSIZE N/64
-//#endif
-//#ifdef OmpSs
-// Definitions of BSIZE for OmpSs
-//#define BSIZE N/64
-//#endif
 
-extern double mysecond();
-
-#pragma omp task out ([bs]a, [bs]b, [bs]c)
+//#pragma omp task out ([bs]a, [bs]b, [bs]c)
 void init_task(double *a, double *b, double *c, int bs)
 {
 	int j;	
@@ -53,7 +32,7 @@ void init_task(double *a, double *b, double *c, int bs)
   	}
 }
 
-#pragma omp task in ([bs]a) out ([bs]c)
+//#pragma omp task in ([bs]a) out ([bs]c)
 void copy_task(double *a, double *c, int bs)
 {
         int j;
@@ -61,7 +40,7 @@ void copy_task(double *a, double *c, int bs)
                 c[j] = a[j];
 }
 
-#pragma omp task in ([bs]c ) out ([bs]b)
+//#pragma omp task in ([bs]c ) out ([bs]b)
 void scale_task(double *b, double *c, double scalar, int bs)
 {
         int j;
@@ -69,7 +48,7 @@ void scale_task(double *b, double *c, double scalar, int bs)
             b[j] = scalar*c[j];
 }
 
-#pragma omp task in ([bs]a, [bs]b) out ([bs]c)
+//#pragma omp task in ([bs]a, [bs]b) out ([bs]c)
 void add_task(double *a, double *b, double *c, int bs)
 {
         int j;
@@ -92,6 +71,43 @@ void tuned_initialization(double a[], double b[], double c[], int N, int bs)
         for (j=0; j<N; j+=bs)
             //Assumes N is multiple of BSIZE 
             init_task(&a[j], &b[j], &c[j], bs); 
+}
+
+/* A gettimeofday routine to give access to the wall
+   clock timer on most UNIX-like systems.  */
+double mysecond()
+{
+        struct timeval tp;
+        int i;
+
+        i = gettimeofday(&tp,NULL);
+        return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
+}
+
+int checktick()
+{
+    int         i, minDelta, Delta;
+    double      t1, t2, timesfound[M];
+
+    /* Collect a sequence of M unique time values from the system. */
+    for (i = 0; i < M; i++) {
+        t1 = mysecond();
+        while( ((t2=mysecond()) - t1) < 1.0E-6 );
+        timesfound[i] = t1 = t2;
+    }
+
+    /*
+     * Determine the minimum difference between these M values.
+     * This result will be our estimate (in microseconds) for the
+     * clock granularity.
+    */
+    minDelta = 1000000;
+    for (i = 1; i < M; i++) {
+        Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
+        minDelta = MIN(minDelta, MAX(Delta,0));
+    }
+
+    return(minDelta);
 }
 
 int main(int argc, char *argv[])
@@ -165,6 +181,7 @@ int main(int argc, char *argv[])
     // tuned_initialization
     for (j=0; j<N; j+=bs)
         //Assumes N is multiple of BSIZE
+#pragma omp task out ([bs]a, [bs]b, [bs]c)
         init_task(&a[j], &b[j], &c[j], bs);
 #pragma omp taskwait
 
@@ -178,6 +195,7 @@ int main(int argc, char *argv[])
      //  tuned_STREAM_Copy(a, c, N, BSIZE);
     int j;
     for (j=0; j<N; j+=bs)
+#pragma omp task in ([bs]a) out ([bs]c)
     // Assumes N is multiple of 100
         copy_task(&a[j], &c[j], bs);
 #else
@@ -192,6 +210,7 @@ int main(int argc, char *argv[])
     // tuned_STREAM_Scale(a, c, scalar, N, BSIZE);
         //Assumes N is multiple of 100
     for (j=0; j<N; j+=bs)
+#pragma omp task in ([bs]c ) out ([bs]b)
          scale_task(&b[j], &c[j], scalar, bs);
 #else
     for (j=0; j<N; j++)
@@ -204,6 +223,7 @@ int main(int argc, char *argv[])
     // tuned_STREAM_Add(a, b, c, N, BSIZE);
     // Assumes N is multiple of 100
     for (j=0; j<N; j+=bs)
+#pragma omp task in ([bs]a, [bs]b) out ([bs]c)
         add_task(&a[j], &b[j], &c[j], bs);
 #else
 	for (j=0; j<N; j++)
@@ -313,43 +333,4 @@ int main(int argc, char *argv[])
     printf(HLINE);
 
     return 0;
-}
-
-int checktick()
-{
-    int		i, minDelta, Delta;
-    double	t1, t2, timesfound[M];
-
-    /* Collect a sequence of M unique time values from the system. */
-    for (i = 0; i < M; i++) {
-	t1 = mysecond();
-	while( ((t2=mysecond()) - t1) < 1.0E-6 );
-  	timesfound[i] = t1 = t2;
-    }
-
-    /*
-     * Determine the minimum difference between these M values.
-     * This result will be our estimate (in microseconds) for the
-     * clock granularity.
-    */
-    minDelta = 1000000;
-    for (i = 1; i < M; i++) {
-	Delta = (int)( 1.0E6 * (timesfound[i]-timesfound[i-1]));
-	minDelta = MIN(minDelta, MAX(Delta,0));
-    }
-
-    return(minDelta);
-}
-
-
-
-/* A gettimeofday routine to give access to the wall
-   clock timer on most UNIX-like systems.  */
-double mysecond()
-{
-        struct timeval tp;
-        int i;
-
-        i = gettimeofday(&tp,NULL);
-        return ( (double) tp.tv_sec + (double) tp.tv_usec * 1.e-6 );
 }
