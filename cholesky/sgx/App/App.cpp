@@ -288,7 +288,7 @@ int SGX_CDECL main(int argc, char *argv[])
    const int nt = n / ts;
 
    // Allocate blocked matrix
-   double **Ah = (double **) malloc(ts*ts*sizeof(double *));
+   double **Ah = (double **) malloc(ts*ts*ts*sizeof(double *));
 
    for (int i = 0; i < nt*nt; i++) {
         Ah[i]= (double *) malloc(ts * ts * sizeof(double));

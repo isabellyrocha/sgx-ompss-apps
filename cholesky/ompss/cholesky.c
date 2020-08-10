@@ -8,7 +8,7 @@
 
 #include "cholesky.h"
 
-#pragma omp task inout([ts][ts]A)
+//#pragma omp task inout([ts][ts]A)
 void omp_potrf(double * const A, int ts, int ld)
 {
    static int INFO;
@@ -16,7 +16,7 @@ void omp_potrf(double * const A, int ts, int ld)
    dpotrf_(&L, &ts, A, &ld, &INFO);
 }
 
-#pragma omp task in([ts][ts]A) inout([ts][ts]B)
+//#pragma omp task in([ts][ts]A) inout([ts][ts]B)
 void omp_trsm(double *A, double *B, int ts, int ld)
 {
    static char LO = 'L', TR = 'T', NU = 'N', RI = 'R';
@@ -24,7 +24,7 @@ void omp_trsm(double *A, double *B, int ts, int ld)
    dtrsm_(&RI, &LO, &TR, &NU, &ts, &ts, &DONE, A, &ld, B, &ld );
 }
 
-#pragma omp task in([ts][ts]A) inout([ts][ts]B)
+//#pragma omp task in([ts][ts]A) inout([ts][ts]B)
 void omp_syrk(double *A, double *B, int ts, int ld)
 {
    static char LO = 'L', NT = 'N';
@@ -32,7 +32,7 @@ void omp_syrk(double *A, double *B, int ts, int ld)
    dsyrk_(&LO, &NT, &ts, &ts, &DMONE, A, &ld, &DONE, B, &ld );
 }
 
-#pragma omp task in([ts][ts]A, [ts][ts]B) inout([ts][ts]C)
+//#pragma omp task in([ts][ts]A, [ts][ts]B) inout([ts][ts]C)
 void omp_gemm(double *A, double *B, double *C, int ts, int ld)
 {
    static const char TR = 'T', NT = 'N';
@@ -45,18 +45,22 @@ void cholesky_blocked(const int ts, const int nt, double* Ah[nt][nt])
    for (int k = 0; k < nt; k++) {
 
       // Diagonal Block factorization
+#pragma omp task inout([ts][ts]Ah)
       omp_potrf (Ah[k][k], ts, ts);
 
       // Triangular systems
       for (int i = k + 1; i < nt; i++) {
+#pragma omp task in([ts][ts]Ah) inout([ts][ts]Ah)
          omp_trsm (Ah[k][k], Ah[k][i], ts, ts);
       }
 
       // Update trailing matrix
       for (int i = k + 1; i < nt; i++) {
          for (int j = k + 1; j < i; j++) {
+#pragma omp task in([ts][ts]Ah, [ts][ts]Ah) inout([ts][ts]Ah)
             omp_gemm (Ah[k][i], Ah[k][j], Ah[j][i], ts, ts);
          }
+#pragma omp task in([ts][ts]Ah) inout([ts][ts]Ah)
          omp_syrk (Ah[k][i], Ah[i][i], ts, ts);
       }
 

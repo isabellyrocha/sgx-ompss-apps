@@ -309,7 +309,7 @@ int SGX_CDECL main(int argc, char *argv[])
     // application inicializations
     init(argc, argv, &N, &DIM, &BSIZE);
 
-    {
+    
     unsigned i, j, k;
 
     gettimeofday(&start,NULL);
@@ -347,13 +347,16 @@ int SGX_CDECL main(int argc, char *argv[])
     printf ("%lu;\t", elapsed);
     // performance in MFLOPS
     printf("MFLOPS: %lu\n", (unsigned long)((((float)N)*((float)N)*((float)N)*2)/elapsed));
-    }
+    
 
     /* Destroy the enclave */
     sgx_destroy_enclave(global_eid);
     
     printf("Info: SampleEnclave successfully returned.\n");
 
+//    #ifdef OMP
+    printf("%d,%d,%f\n", (int) s, (int) e, (e-s));
+//    #endif
 //    printf("Enter a character before exit ...\n");
 //    getchar();
     return 0;

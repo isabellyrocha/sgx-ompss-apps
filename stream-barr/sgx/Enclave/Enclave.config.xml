@@ -2,7 +2,8 @@
   <ProdID>0</ProdID>
   <ISVSVN>0</ISVSVN>
   <StackMaxSize>0x4000</StackMaxSize>
-  <HeapMaxSize>0x1000000</HeapMaxSize>
+  <HeapMaxSize>0x8000</HeapMaxSize>
+  <TCSMaxNum>1000</TCSMaxNum>
   <TCSNum>10</TCSNum>
   <TCSPolicy>1</TCSPolicy>
   <!-- Recommend changing 'DisableDebug' to 1 to make the enclave undebuggable for enclave release -->

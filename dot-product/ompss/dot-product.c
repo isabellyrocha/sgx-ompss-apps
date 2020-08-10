@@ -73,13 +73,21 @@ int main(int argc, char **argv) {
     initialize(N, B);
 
     gettimeofday(&start,NULL);
+    double s = (double)start.tv_sec + (double)start.tv_usec * .000001;
     result = dot_product (N, CHUNK_SIZE, A, B);
 
     gettimeofday(&stop,NULL);
+    double e = (double)stop.tv_sec + (double)stop.tv_usec * .000001;
+
+    printf("\nMarking starting point.. Timestamp: %f.", s);
+    printf("\nMarking starting point.. Timestamp: %f.", e);
+
     elapsed = 1000000 * (stop.tv_sec - start.tv_sec);
     elapsed += stop.tv_usec - start.tv_usec;
     printf ("Result of Dot product i= %le\n", result);
     printf("time: ");
     printf ("%lu;\n", elapsed);
     printf("MFLOPS: %lu\n", (unsigned long)((((float)N)*((float)N)*((float)N)*2)/elapsed));
+
+    printf("%d,%d,%d,%f\n", omp_get_num_threads(), (int)s, (int)e, (e-s));
 }

@@ -119,8 +119,12 @@ int main(int argc, char *argv[])
     double		scalar, t, times[4][NTIMES], total_time, total_bytes;
     int                 N = atoi(argv[1])*1024*1024; //128*1024*1024;
     int                 bs = N/atoi(argv[2]); //N/64; 
+    struct timeval start, stop;
+    unsigned long elapsed;
 
     /* --- SETUP --- determine precision and check timing --- */
+    gettimeofday(&start,NULL);
+    double s = (double)start.tv_sec + (double)start.tv_usec * .000001;
 
     printf(HLINE);
     printf("STREAM version $Revision: 5.8 $\n");
@@ -242,8 +246,11 @@ int main(int argc, char *argv[])
     times[3][k] = mysecond() - times[3][k];
     }
 #pragma omp taskwait
+    gettimeofday(&stop,NULL);
+    double e = (double)stop.tv_sec + (double)stop.tv_usec * .000001;
     total_time = mysecond() - total_time;
 
+    printf("%d,%d,%d,%f\n", omp_get_num_threads(), (int)s, (int)e, (e-s));
     /*	--- SUMMARY --- */
 
     for (k=1; k<NTIMES; k++) /* note -- skip first iteration */ {

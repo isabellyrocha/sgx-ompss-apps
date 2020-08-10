@@ -149,6 +149,9 @@ int main(int argc, char *argv[])
   // compute with CellSs
   compute(&start, &stop,(unsigned long) BSIZE, DIM, (void *)A, (void *)B, (void *)C);
 
+  double s = (double)start.tv_sec + (double)start.tv_usec * .000001;
+  double e = (double)stop.tv_sec + (double)stop.tv_usec * .000001;
+  
   elapsed = 1000000 * (stop.tv_sec - start.tv_sec);
   elapsed += stop.tv_usec - start.tv_usec;
 // threads
@@ -160,6 +163,8 @@ int main(int argc, char *argv[])
 // performance in MFLOPS
   printf("MFLOPS: %lu\n", (unsigned long)((((double)N)*((double)N)*((double)N)*2)/elapsed));
 
-	return 0;
+  printf("%d,%d,%d,%f\n", omp_get_num_threads(), (int)s, (int)e, (e-s));
+
+  return 0;
 }
 

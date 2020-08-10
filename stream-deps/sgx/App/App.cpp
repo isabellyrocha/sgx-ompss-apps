@@ -482,7 +482,11 @@ int SGX_CDECL main(int argc, char *argv[])
     times[3][k] = mysecond() - times[3][k];
     }
 #pragma omp taskwait
+    gettimeofday(&stop,NULL);
+    double e =(double)stop.tv_sec + (double)stop.tv_usec * .000001;
     total_time = mysecond() - total_time;
+
+     printf("%d,%d,%f\n", (int)s, (int)e, (e-s));
     /*	--- SUMMARY --- */
 
     for (k=1; k<NTIMES; k++) /* note -- skip first iteration */ {
@@ -563,12 +567,6 @@ int SGX_CDECL main(int argc, char *argv[])
     printf(HLINE);
 
 /* ------------------------------------------------------------------------------------------------------------------------*/
-
-
-
-    gettimeofday(&stop,NULL);
-    double e =(double)stop.tv_sec + (double)stop.tv_usec * .000001;
-
     printf("\nMarking starting point.. Timestamp: %f.", s);
     printf("\nMarking starting point.. Timestamp: %f.", e);
     printf("\nInference completed in %f seconds.", (e-s));
