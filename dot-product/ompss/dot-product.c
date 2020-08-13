@@ -63,8 +63,9 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    N = atol(argv[1]) * 1024L;
+    //N = atol(argv[1]) * 1024L;
     CHUNK_SIZE = atol(argv[2]) * 1024L;
+    N = atol(argv[1]) * CHUNK_SIZE * 1024L;
 
     double *A = malloc(N*sizeof(double));
     double *B = malloc(N*sizeof(double));
