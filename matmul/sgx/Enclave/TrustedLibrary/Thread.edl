@@ -47,8 +47,8 @@ enclave {
         public void ecall_producer();
         public void ecall_consumer();
 
-        public void ecall_matmul_u([user_check] float* a,
-                                   [user_check] float* b,
-                                   [user_check] float* c, int NB);
+        public void ecall_matmul_u([user_check] double* a,
+                                   [user_check] double* b,
+                                   [user_check] double* c, int NB);
     };
 };

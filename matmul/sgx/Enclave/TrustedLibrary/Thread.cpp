@@ -105,9 +105,9 @@ void ecall_consumer(void)
 
 //16384
 //2048
-void ecall_matmul_u(float* a,
-                    float* b,
-                    float* c, int NB)
+void ecall_matmul_u(double* a,
+                    double* b,
+                    double* c, int NB)
 {
   int i, j, k, I;
   double tmp;

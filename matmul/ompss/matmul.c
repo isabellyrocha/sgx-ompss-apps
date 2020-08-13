@@ -155,15 +155,15 @@ int main(int argc, char *argv[])
   elapsed = 1000000 * (stop.tv_sec - start.tv_sec);
   elapsed += stop.tv_usec - start.tv_usec;
 // threads
-  printf("threads: ");
-  printf ("%d;\t\n", omp_get_num_threads() );
+//  printf("threads: ");
+//  printf ("%d;\t\n", omp_get_num_threads() );
 // time in usecs
-  printf("time: ");
-  printf ("%lu;\t", elapsed);
+//  printf("time: ");
+//  printf ("%lu;\t", elapsed);
 // performance in MFLOPS
-  printf("MFLOPS: %lu\n", (unsigned long)((((double)N)*((double)N)*((double)N)*2)/elapsed));
+//  printf("MFLOPS: %lu\n", (unsigned long)((((double)N)*((double)N)*((double)N)*2)/elapsed));
 
-  printf("%d,%d,%d,%f\n", omp_get_num_threads(), (int)s, (int)e, (e-s));
+  printf("%d,%d,%f", (int)s, (int)e, (e-s));
 
   return 0;
 }

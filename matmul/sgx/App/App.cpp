@@ -39,7 +39,7 @@
 #include "sgx_urts.h"
 #include "App.h"
 #include "Enclave_u.h"
-
+#include <string>
 /* Global EID shared by multiple threads */
 sgx_enclave_id_t global_eid = 0;
 
@@ -147,11 +147,11 @@ void print_error_message(sgx_status_t ret)
     	printf("Error code is 0x%X. Please refer to the \"Intel SGX SDK Developer Reference\" for more details.\n", ret);
 }
 
-float **A;
-float **B;
-float **C;
+double **A;
+double **B;
+double **C;
 
-static void print_matrix(float *A[8][8])
+static void print_matrix(double *A[8][8])
 {
     int i, j;
     for (i=0; i < 2 ; i++ ) {
@@ -161,7 +161,7 @@ static void print_matrix(float *A[8][8])
     }
 }
 
-static void print_matrix2(float *A)
+static void print_matrix2(double *A)
 {
     int i, j;
     for (i=0; i < 2 ; i++ ) {
@@ -179,11 +179,11 @@ static double timestemp() {
     return (double)time.tv_sec + (double)time.tv_usec * .000001;
 }
 
-void fill_random(float *Alin, int NN)
+void fill_random(double *Alin, int NN)
 {
     int i;
     for (i = 0; i < NN; i++) {
-        Alin[i]=((float)rand())/((float)RAND_MAX);
+        Alin[i]=((double)rand())/((double)RAND_MAX);
     }
 }
 
@@ -213,9 +213,9 @@ void init(unsigned long argc, char **argv, unsigned long * N_p, unsigned long * 
     *BSIZE_p=BSIZE;
 
     // linear matrix
-    float *Alin = (float *) malloc(NN * sizeof(float));
-    float *Blin = (float *) malloc(NN * sizeof(float));
-    float *Clin = (float *) malloc(NN * sizeof(float));
+    double *Alin = (double *) malloc(NN * sizeof(double));
+    double *Blin = (double *) malloc(NN * sizeof(double));
+    double *Clin = (double *) malloc(NN * sizeof(double));
 
     // fill the matrix with random values
     srand(0);
@@ -224,30 +224,36 @@ void init(unsigned long argc, char **argv, unsigned long * N_p, unsigned long * 
     for (i=0; i < NN; i++)
         Clin[i]=0.0;
 
-    A = (float **) malloc(DIM*DIM*sizeof(float *));
-    B = (float **) malloc(DIM*DIM*sizeof(float *));
-    C = (float **) malloc(DIM*DIM*sizeof(float *));
+    A = (double **) malloc(DIM*DIM*sizeof(double *));
+    B = (double **) malloc(DIM*DIM*sizeof(double *));
+    C = (double **) malloc(DIM*DIM*sizeof(double *));
 
     for (i = 0; i < DIM*DIM; i++) {
-        A[i] = (float *) malloc(BSIZE*BSIZE*sizeof(float));
-        B[i] = (float *) malloc(BSIZE*BSIZE*sizeof(float));
-        C[i] = (float *) malloc(BSIZE*BSIZE*sizeof(float));
+        A[i] = (double *) malloc(BSIZE*BSIZE*sizeof(double));
+        B[i] = (double *) malloc(BSIZE*BSIZE*sizeof(double));
+        C[i] = (double *) malloc(BSIZE*BSIZE*sizeof(double));
     }
 
     // Convert to blocks
     for (i = 0; i < N; i++) {
         for (j = 0; j < N; j++) {
-            ((float * (*) [DIM])A)[i/BSIZE][j/BSIZE][(i%BSIZE)*BSIZE+j%BSIZE] = Alin[j*N+i];
-            ((float * (*) [DIM])B)[i/BSIZE][j/BSIZE][(i%BSIZE)*BSIZE+j%BSIZE] = Blin[j*N+i];
-            ((float * (*) [DIM])C)[i/BSIZE][j/BSIZE][(i%BSIZE)*BSIZE+j%BSIZE] = Clin[j*N+i];
+            ((double * (*) [DIM])A)[i/BSIZE][j/BSIZE][(i%BSIZE)*BSIZE+j%BSIZE] = Alin[j*N+i];
+            ((double * (*) [DIM])B)[i/BSIZE][j/BSIZE][(i%BSIZE)*BSIZE+j%BSIZE] = Blin[j*N+i];
+            ((double * (*) [DIM])C)[i/BSIZE][j/BSIZE][(i%BSIZE)*BSIZE+j%BSIZE] = Clin[j*N+i];
         }
     }
 
-    print_matrix((float *(*) [8])C);
+//    print_matrix((float *(*) [8])C);
 
     free(Alin);
     free(Blin);
     free(Clin);
+}
+
+std::string get_size(long size) {
+    if (size >= 32) return "large";
+    if (size >= 16) return "medium";
+    return "small";
 }
 
 /* Initialize the enclave:
@@ -282,6 +288,7 @@ int SGX_CDECL main(int argc, char *argv[])
 {
     (void)(argc);
     (void)(argv);
+for (int rounds = 0; rounds < 10; rounds++) {
 
     /* Initialize the enclave */
     if(initialize_enclave() < 0){
@@ -320,7 +327,7 @@ int SGX_CDECL main(int argc, char *argv[])
             for (k = 0; k < DIM; k++) {
                 #pragma omp task in(A[i][k], B[k][j]) inout(C[i][j]) no_copy_deps
                 {
-                ecall_matmul_u (global_eid, &A[i][k], &B[k][j], &C[i][j], BSIZE);
+                ecall_matmul_u(global_eid, &A[i][k], &B[k][j], &C[i][j], BSIZE);
                 }
             }
 
@@ -328,11 +335,8 @@ int SGX_CDECL main(int argc, char *argv[])
     gettimeofday(&stop,NULL);
     double e =(double)stop.tv_sec + (double)stop.tv_usec * .000001;
 
-    printf("\nMarking starting point.. Timestamp: %f.", s);
-    printf("\nMarking starting point.. Timestamp: %f.", e);
-//    printf("\nInference completed in %f seconds.", (e-s));
 
-    print_matrix2(&C[DIM-1][DIM-1]);
+//    print_matrix2(&C[DIM-1][DIM-1]);
     elapsed = 1000000 * (stop.tv_sec - start.tv_sec);
     elapsed += stop.tv_usec - start.tv_usec;
 
@@ -343,21 +347,25 @@ int SGX_CDECL main(int argc, char *argv[])
     #endif
    
     // time in usecs
-    printf("time: ");
-    printf ("%lu;\t", elapsed);
+//    printf("time: ");
+//    printf ("%lu;\t", elapsed);
     // performance in MFLOPS
-    printf("MFLOPS: %lu\n", (unsigned long)((((float)N)*((float)N)*((float)N)*2)/elapsed));
+//    printf("MFLOPS: %lu\n", (unsigned long)((((float)N)*((float)N)*((float)N)*2)/elapsed));
     
 
     /* Destroy the enclave */
     sgx_destroy_enclave(global_eid);
     
-    printf("Info: SampleEnclave successfully returned.\n");
-
+//    printf("Info: SampleEnclave successfully returned.\n");
+    char *size;
 //    #ifdef OMP
-    printf("%d,%d,%f\n", (int) s, (int) e, (e-s));
+    if (BSIZE >= 32) size = "large";
+    else if (BSIZE >= 16) size = "medium";
+    else size = "small";
+    printf("input,%s,%d,%d,%f\n", size, (int) s, (int) e, (e-s));
 //    #endif
 //    printf("Enter a character before exit ...\n");
 //    getchar();
+    }
     return 0;
 }
