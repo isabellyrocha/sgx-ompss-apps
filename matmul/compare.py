@@ -23,6 +23,6 @@ sgx = file_to_map("sgx/exp.out")
 for key in ompss.keys():
     for value in ompss[key].keys():
 #        print(ompss[key][value]['energy'])
-        energy = (np.mean(ompss[key][value]['energy']) - np.mean(sgx[key][value]['energy']))/np.mean(ompss[key][value]['energy'])
-        duration =  (np.mean(ompss[key][value]['duration']) - np.mean(sgx[key][value]['duration']))/np.mean(ompss[key][value]['duration'])
+        energy = (np.mean(sgx[key][value]['energy']) - np.mean(ompss[key][value]['energy']))/np.mean(ompss[key][value]['energy'])
+        duration =  (np.mean(sgx[key][value]['duration']) - np.mean(ompss[key][value]['duration']))/np.mean(ompss[key][value]['duration'])
         print("%s,%s,%f,%f" % (key, value, duration, energy))

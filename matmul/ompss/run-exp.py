@@ -11,9 +11,10 @@ def get_size(size):
         return "medium"
     return "small"
 
-for i in range(10):
+for i in range(20):
     for size in sizes:
-        command = "NX_SMP_WORKERS=1 ./matmul-p %s 32" % size
+        command = "NX_SMP_WORKERS=1 ./matmul-p %s 8" % size
+#        print(command)
         output,error  = subprocess.Popen(
                     command, universal_newlines=True, shell=True,
                     stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
@@ -27,14 +28,14 @@ for i in range(10):
         print("input,%s,%s" % (get_size(size), output))
 
     for thread in threads:
-        command = "NX_SMP_WORKERS=%s ./matmul-p 32 8" % thread
+        command = "NX_SMP_WORKERS=%s ./matmul-p 8 8" % thread
         output,error  = subprocess.Popen(
                     command, universal_newlines=True, shell=True,
                     stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
         print("thread,%s,%s" % (thread, output))
 
     for scheduler in schedulers:
-        command = "NX_SMP_WORKERS=1 NX_ARGS=\"--schedule=%s\" ./matmul-p 32 8" % scheduler
+        command = "NX_SMP_WORKERS=1 NX_ARGS=\"--schedule=%s\" ./matmul-p 8 8" % scheduler
         output,error  = subprocess.Popen(
                     command, universal_newlines=True, shell=True,
                     stdout=subprocess.PIPE, stderr=subprocess.PIPE).communicate()
