@@ -117,8 +117,10 @@ int main(int argc, char *argv[])
     int			BytesPerWord;
     register int	j, k;
     double		scalar, t, times[4][NTIMES], total_time, total_bytes;
-    int                 N = atoi(argv[1])*1024*1024; //128*1024*1024;
-    int                 bs = N/atoi(argv[2]); //N/64; 
+//    int                 N = atoi(argv[1])*1024*1024; //128*1024*1024;
+//    int                 bs = N/atoi(argv[2]); //N/64; 
+    int                 bs = atoi(argv[2]); //N/64;
+    int                 N = atoi(argv[1])*1024*bs;
     struct timeval start, stop;
     unsigned long elapsed;
 
@@ -126,24 +128,24 @@ int main(int argc, char *argv[])
     gettimeofday(&start,NULL);
     double s = (double)start.tv_sec + (double)start.tv_usec * .000001;
 
-    printf(HLINE);
-    printf("STREAM version $Revision: 5.8 $\n");
-    printf(HLINE);
+//    printf(HLINE);
+//    printf("STREAM version $Revision: 5.8 $\n");
+//    printf(HLINE);
     BytesPerWord = sizeof(double);
-    printf("This system uses %d bytes per DOUBLE PRECISION word.\n",
-	BytesPerWord);
+//    printf("This system uses %d bytes per DOUBLE PRECISION word.\n",
+//	BytesPerWord);
 
-    printf(HLINE);
-    printf("Array size = %d, Offset = %d\n" , N, OFFSET);
-    printf("Total memory required = %.1f MB.\n",
-	(3.0 * BytesPerWord) * ( (double) N / 1048576.0));
-    printf("Each test is run %d times, but only\n", NTIMES);
-    printf("the *best* time for each is used.\n");
+//    printf(HLINE);
+//    printf("Array size = %d, Offset = %d\n" , N, OFFSET);
+//    printf("Total memory required = %.1f MB.\n",
+//	(3.0 * BytesPerWord) * ( (double) N / 1048576.0));
+//    printf("Each test is run %d times, but only\n", NTIMES);
+//    printf("the *best* time for each is used.\n");
 
 #ifdef OmpSs
-    printf(HLINE);
+//    printf(HLINE);
     k = omp_get_num_threads();
-    printf ("Number of Threads = %i\n",k);
+//    printf ("Number of Threads = %i\n",k);
 #endif
 #ifdef SMPSs
     printf("CSS_NUM_CPUS %s \n", getenv("CSS_NUM_CPUS"));
@@ -161,9 +163,9 @@ int main(int argc, char *argv[])
     printf ("Number of CSS Threads = %i\n",k);
 #endif
 
-    printf(HLINE);
+//    printf(HLINE);
 
-    printf ("Printing one line per active thread....\n");
+//    printf ("Printing one line per active thread....\n");
 
     double __attribute__((aligned(4096))) *a = (double*) malloc(N*sizeof(double));
     double __attribute__((aligned(4096))) *b = (double*) malloc(N*sizeof(double));
@@ -250,7 +252,7 @@ int main(int argc, char *argv[])
     double e = (double)stop.tv_sec + (double)stop.tv_usec * .000001;
     total_time = mysecond() - total_time;
 
-    printf("%d,%d,%d,%f\n", omp_get_num_threads(), (int)s, (int)e, (e-s));
+    printf("%d,%d,%f", (int)s, (int)e, (e-s));
     /*	--- SUMMARY --- */
 
     for (k=1; k<NTIMES; k++) /* note -- skip first iteration */ {
@@ -262,13 +264,13 @@ int main(int argc, char *argv[])
     }
     
     total_bytes = bytes[0] + bytes[1] + bytes [2] + bytes [3];
-    printf ("Average Rate (MB/s): %11.4f \n", 1.0E-06 * total_bytes*NTIMES/total_time);
-    printf ("note: in this version, the average rate per function\n");
-    printf ("can not be provided, use tracing to check it\n");
+//    printf ("Average Rate (MB/s): %11.4f \n", 1.0E-06 * total_bytes*NTIMES/total_time);
+//    printf ("note: in this version, the average rate per function\n");
+//    printf ("can not be provided, use tracing to check it\n");
 
-    printf(HLINE);
+//    printf(HLINE);
 
-    printf("TOTAL time (including initialization) =  %11.4f seconds\n", total_time);
+//    printf("TOTAL time (including initialization) =  %11.4f seconds\n", total_time);
     /* --- Check Results --- */
 
     // checkSTREAMresults(a, b, c, BSIZE);
@@ -312,7 +314,7 @@ int main(int argc, char *argv[])
 #define abs(a) ((a) >= 0 ? (a) : -(a))
 #endif
     epsilon = 1.e-8;
-
+/*
     if (abs(aj-asum)/asum > epsilon) {
 	printf ("Failed Validation on array a[]\n");
 	printf ("        Expected  : %f \n",aj);
@@ -330,6 +332,6 @@ int main(int argc, char *argv[])
     }
 
     printf(HLINE);
-
+*/
     return 0;
 }

@@ -353,8 +353,10 @@ int SGX_CDECL main(int argc, char *argv[])
     int			BytesPerWord;
     register int	j, k;
     double		scalar, t, times[4][NTIMES], total_time, total_bytes;
-    int                 N = atoi(argv[1])*1024*1024; //128*1024*1024;
-    int                 bs = N/atoi(argv[2]); //N/64;
+//    int                 N = atoi(argv[1])*1024*1024; //128*1024*1024;
+//    int                 bs = N/atoi(argv[2]); //N/64;
+    int                 bs = atoi(argv[2]); //N/64;
+    int                 N = atoi(argv[1])*1024*bs;
 
     /* --- SETUP --- determine precision and check timing --- */
 
