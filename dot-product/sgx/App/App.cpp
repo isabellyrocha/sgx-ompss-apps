@@ -229,8 +229,9 @@ int SGX_CDECL main(int argc, char *argv[])
         return 1;
     }
 
-    N = atol(argv[1]) * 1024L;
+    //N = atol(argv[1]) * 1024L;
     CHUNK_SIZE = atol(argv[2]) * 1024L;
+    N = atol(argv[1]) * CHUNK_SIZE * 1024L;
 
     double *A = (double *) malloc(N*sizeof(double));
     double *B = (double *) malloc(N*sizeof(double));
