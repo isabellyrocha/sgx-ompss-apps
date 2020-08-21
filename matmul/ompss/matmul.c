@@ -93,7 +93,7 @@ void init (unsigned long argc, char **argv, unsigned long * N_p, unsigned long *
   }
 
   // matrix init
-  unsigned long N=BSIZE*DIM;
+  unsigned long N=BSIZE;
   unsigned long NN=N*N;
   int i;
 

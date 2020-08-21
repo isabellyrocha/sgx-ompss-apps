@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 //    int                 N = atoi(argv[1])*1024*1024; //128*1024*1024;
 //    int                 bs = N/atoi(argv[2]); //N/64; 
     int                 bs = atoi(argv[2]); //N/64;
-    int                 N = atoi(argv[1])*1024*bs;
+    int                 N = atoi(argv[1])*1024;
     struct timeval start, stop;
     unsigned long elapsed;
 

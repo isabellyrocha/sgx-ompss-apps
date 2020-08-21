@@ -204,7 +204,8 @@ void init(unsigned long argc, char **argv, unsigned long * N_p, unsigned long * 
     }
 
     // matrix init
-    unsigned long N=BSIZE*DIM;
+//    unsigned long N=BSIZE*DIM; 
+   unsigned long N=DIM;
     unsigned long NN=N*N;
     int i, j;
 
@@ -288,7 +289,7 @@ int SGX_CDECL main(int argc, char *argv[])
 {
     (void)(argc);
     (void)(argv);
-for (int rounds = 0; rounds < 10; rounds++) {
+//for (int rounds = 0; rounds < 10; rounds++) {
 
     /* Initialize the enclave */
     if(initialize_enclave() < 0){
@@ -325,7 +326,8 @@ for (int rounds = 0; rounds < 10; rounds++) {
     for (i = 0; i < DIM; i++)
         for (j = 0; j < DIM; j++)
             for (k = 0; k < DIM; k++) {
-                #pragma omp task in(A[i][k], B[k][j]) inout(C[i][j]) no_copy_deps
+//                #pragma omp task in(A[i][k], B[k][j]) inout(C[i][j]) no_copy_deps
+                #pragma omp task in(A[BSIZE][BSIZE], B[BSIZE][BSIZE]) inout(C[BSIZE][BSIZE]) no_copy_deps
                 {
                 ecall_matmul_u(global_eid, &A[i][k], &B[k][j], &C[i][j], BSIZE);
                 }
@@ -366,6 +368,6 @@ for (int rounds = 0; rounds < 10; rounds++) {
 //    #endif
 //    printf("Enter a character before exit ...\n");
 //    getchar();
-    }
+  //  }
     return 0;
 }
