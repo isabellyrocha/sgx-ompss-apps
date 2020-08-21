@@ -7,10 +7,6 @@ This example shows the Cholesky kernel. This algorithm is a decomposition of a H
 positive-definite matrix into the product of a lower triangular matrix and its conjugate
 transpose.
 
-.. note::
-  You can dowload this code visiting the url http://pm.bsc.es *OmpSs Examples and Exercises*'s
-  (code) link. The Cholesky kernel is included inside the  *01-examples*'s directory.
-
 The kernel uses four different linear algorithms: potrf, trsm, gemm and syrk.
 Following code shows the basic pattern for a Cholesky factorisation::
 
@@ -63,4 +59,3 @@ The following code shows how we have parallelized Cholesky::
 Note that for each of the dependences we also specify which is the matrix (block) size.
 Although this is not needed, due there is no overlapping among the different blocks,
 it will allow the runtime to compute dependences using the region mechanism.
-
