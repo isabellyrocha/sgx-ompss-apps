@@ -66,5 +66,3 @@ more complicated than the previous version.
 Basically we have prepared our code to parallelize it, creating a private
 storage for each chunk and splitting the main loop into two different nested
 loops to adjust the granularity of our tasks (see ``CHUNK_SIZE`` variable).
-Apart from that, we have also annotated the tasks for you, but this parallel
-version is not ready, yet.
