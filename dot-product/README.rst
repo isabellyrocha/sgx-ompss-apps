@@ -18,9 +18,8 @@ operation is shown below::
 
 The example above is interesting from a programming model point of view because
 it accumulates the result of each iteration on a single variable called
-``result``. As we have already seen in this course, this kind of operation is
-called reduction, and it is a very common pattern in scientific and
-mathematical applications.
+``result``. This kind of operation is called reduction, and it is a very common 
+pattern in scientific and mathematical applications.
 
 There are several ways to parallelize operations that compute a reduction:
 
@@ -36,11 +35,11 @@ There are several ways to parallelize operations that compute a reduction:
    length), and when all the tasks are completed, the contents of the vector
    are summed.
 
-
-Once we have introduced the dot product operation and the different ways of
-parallelizing a reduction, let's start this exercise. If you open the
-*dot-product.c* file, you will see that the ``dot_product`` function is a bit
-more complicated than the previous version.
+If you open the *dot-product.c* file, you will see that the ``dot_product`` f
+unction is a bit more complicated than the previous version.
+Basically we have prepared our code to parallelize it, creating a private
+storage for each chunk and splitting the main loop into two different nested
+loops to adjust the granularity of our tasks (see ``CHUNK_SIZE`` variable).
 
 .. Ternary operator is wrongly colored in C syntax. If newer versions ever fix it, c# can be removed.
 .. code-block:: c#
@@ -62,7 +61,3 @@ more complicated than the previous version.
 
         j++;
     }
-
-Basically we have prepared our code to parallelize it, creating a private
-storage for each chunk and splitting the main loop into two different nested
-loops to adjust the granularity of our tasks (see ``CHUNK_SIZE`` variable).
