@@ -32,11 +32,11 @@
 
 #include "../Enclave.h"
 #include "Enclave_t.h"
-
 #include "sgx_thread.h"
 
 static size_t global_counter = 0;
 static sgx_thread_mutex_t global_mutex = SGX_THREAD_MUTEX_INITIALIZER;
+int offset = 13;
 
 #define BUFFER_SIZE 50
 
@@ -103,12 +103,25 @@ void ecall_consumer(void)
     }
 }
 
-//16384
-//2048
+void encrypt(double* matrix, int NB) {
+    for (int i = 0; i < NB; i++) {
+        matrix[i] = matrix[i] - offset;
+    }
+}
+
+
+void decrypt(double* matrix, int NB) {
+    for (int i = 0; i < NB; i++) {
+        matrix[i] = matrix[i] + offset;
+    }
+}
+
 void ecall_matmul_u(double* a,
                     double* b,
                     double* c, int NB)
 {
+  decrypt(a, NB);
+  decrypt(b, NB);
   int i, j, k, I;
   double tmp;
   for (i = 0; i < NB; i++)
@@ -124,4 +137,5 @@ void ecall_matmul_u(double* a,
       c[I+j]=tmp;
     }
   }
+  encrypt(c, NB);
 }
