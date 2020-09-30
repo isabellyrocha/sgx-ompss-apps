@@ -50,8 +50,8 @@ enclave {
                                    [user_check] double *b,
                                    [user_check] double *c,
                                    long i, long j, long CHUNK_SIZE);
-        public void ecall_init_task([user_check] double *a, [user_check] double *b, [user_check] double *c, int bs);
-        public void ecall_copy_task([user_check] double *a, [user_check] double *c, int bs);
+//        public void ecall_init_task([user_check] double *a, [user_check] double *b, [user_check] double *c, int bs);
+        public void ecall_copy_task([user_check] double *a, [user_check] double *c, long bs);
         public void ecall_scale_task([user_check] double *b, [user_check] double *c, double scalar, int bs);
         public void ecall_add_task([user_check] double *a, [user_check] double *b, [user_check] double *c, int bs);
         public void ecall_triad_task([user_check] double *a, [user_check] double *b, [user_check] double *c, double scalar, int bs);

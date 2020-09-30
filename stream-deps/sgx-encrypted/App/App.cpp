@@ -1,92 +1,14 @@
-/*-----------------------------------------------------------------------*/
-/* Program: Stream                                                       */
-/* Adapted to StarSs by Rosa M. Badia (Barcelona Supercomputing Center)	 */
-/* This version does not insert barriers after each set of operations,   */
-/* to promote task chaining in StarSs					 */
-/* Revision: $Id: stream.c,v 5.8 2007/02/19 23:57:39 mccalpin Exp mccalpin $ */
-/* Original code developed by John D. McCalpin                           */
-/* Programmers: John D. McCalpin                                         */
-/*              Joe R. Zagar                                             */
-/*                                                                       */
-/* This program measures memory transfer rates in MB/s for simple        */
-/* computational kernels coded in C.                                     */
-/*-----------------------------------------------------------------------*/
-/* Copyright 1991-2005: John D. McCalpin                                 */
-/*-----------------------------------------------------------------------*/
-/* License:                                                              */
-/*  1. You are free to use this program and/or to redistribute           */
-/*     this program.                                                     */
-/*  2. You are free to modify this program for your own use,             */
-/*     including commercial use, subject to the publication              */
-/*     restrictions in item 3.                                           */
-/*  3. You are free to publish results obtained from running this        */
-/*     program, or from works that you derive from this program,         */
-/*     with the following limitations:                                   */
-/*     3a. In order to be referred to as "STREAM benchmark results",     */
-/*         published results must be in conformance to the STREAM        */
-/*         Run Rules, (briefly reviewed below) published at              */
-/*         http://www.cs.virginia.edu/stream/ref.html                    */
-/*         and incorporated herein by reference.                         */
-/*         As the copyright holder, John McCalpin retains the            */
-/*         right to determine conformity with the Run Rules.             */
-/*     3b. Results based on modified source code or on runs not in       */
-/*         accordance with the STREAM Run Rules must be clearly          */
-/*         labelled whenever they are published.  Examples of            */
-/*         proper labelling include:                                     */
-/*         "tuned STREAM benchmark results"                              */
-/*         "based on a variant of the STREAM benchmark code"             */
-/*         Other comparable, clear and reasonable labelling is           */
-/*         acceptable.                                                   */
-/*     3c. Submission of results to the STREAM benchmark web site        */
-/*         is encouraged, but not required.                              */
-/*  4. Use of this program or creation of derived works based on this    */
-/*     program constitutes acceptance of these licensing restrictions.   */
-/*  5. Absolutely no warranty is expressed or implied.                   */
-/*-----------------------------------------------------------------------*/
 # include <stdio.h>
 # include <math.h>
 # include <float.h>
 # include <stdlib.h>
-//# include "limits.h"
 # include <sys/time.h>
 # include "omp.h"
 
-/* INSTRUCTIONS:
- *
- *	1) Stream requires a good bit of memory to run.  Adjust the
- *          value of 'N' (below) to give a 'timing calibration' of
- *          at least 20 clock-ticks.  This will provide rate estimates
- *          that should be good to about 5% precision.
- */
-
-//# define N	128*1024*1024
 # define M 20
 # define NTIMES	10
 # define OFFSET	0
-
-/*
- *	3) Compile the code with full optimization.  Many compilers
- *	   generate unreasonably bad code before the optimizer tightens
- *	   things up.  If the results are unreasonably good, on the
- *	   other hand, the optimizer might be too smart for me!
- *
- *         Try compiling with:
- *               cc -O stream_omp.c -o stream_omp
- *
- *         This is known to work on Cray, SGI, IBM, and Sun machines.
- *
- *
- *	4) Mail the results to mccalpin@cs.virginia.edu
- *	   Be sure to include:
- *		a) computer hardware model number and software revision
- *		b) the compiler flags
- *		c) all of the output from the test case.
- * Thanks!
- *
- */
-
 # define HLINE "-------------------------------------------------------------\n"
-
 # ifndef MIN
 # define MIN(x,y) ((x)<(y)?(x):(y))
 # endif
@@ -95,28 +17,7 @@
 # endif
 
 #define OmpSs
-//#define SMPSs
-//#define CellSs
-//#define CellSs_tracing
 #define TUNED
-// Definition of BSIZE for CellSs
-//#ifdef CellSs
-//#define BSIZE 4000
-//#endif
-// Definition of BSIZE for CellSs when using tracing
-//#ifdef CellSs_tracing
-//#define BSIZE 3200
-//#endif
-//#ifdef SMPSs
-// Definition of BSIZE for SMPSs
-//#define BSIZE N/64
-//#endif
-//#ifdef OmpSs
-// Definitions of BSIZE for OmpSs
-//#define BSIZE N/64
-//#endif
-
-
 
 #include <stdio.h>
 #include <string.h>
@@ -132,6 +33,7 @@
 
 /* Global EID shared by multiple threads */
 sgx_enclave_id_t global_eid = 0;
+int offset = 13;
 
 typedef struct _sgx_errlist_t {
     sgx_status_t err;
@@ -316,6 +218,24 @@ int checktick()
     return(minDelta);
 }
 
+void encrypt(double *matrix, int N)
+{
+    for (int i = 0; i < N; i++) {
+        matrix[i] = (matrix[i] + offset);
+    }
+}
+
+void init_task(double *a, double *b, double *c, int bs)
+{
+        int j;
+        for (j=0; j < bs; j++){
+                a[j] = 1.0;
+                b[j] = 2.0;
+                c[j] = 0.0;
+                a[j] = 2.0E0 * a[j];
+        }
+}
+
 int SGX_CDECL main(int argc, char *argv[])
 {
     (void)(argc);
@@ -421,11 +341,11 @@ int SGX_CDECL main(int argc, char *argv[])
     for (j=0; j<N; j+=bs)
         //Assumes N is multiple of BSIZE
 #pragma omp task out ([bs]a, [bs]b, [bs]c)
-        ecall_init_task(global_eid, &a[j], &b[j], &c[j], bs);
+        init_task(&a[j], &b[j], &c[j], bs);
 //#pragma omp taskwait
 
     /*	--- MAIN LOOP --- repeat test cases NTIMES times --- */
-
+    total_time = mysecond();
     scalar = 3.0;
     for (k=0; k<NTIMES; k++) {
 	times[0][k] = mysecond();
