@@ -1,33 +1,3 @@
-/*
- * Copyright (C) 2011-2019 Intel Corporation. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- *   * Redistributions of source code must retain the above copyright
- *     notice, this list of conditions and the following disclaimer.
- *   * Redistributions in binary form must reproduce the above copyright
- *     notice, this list of conditions and the following disclaimer in
- *     the documentation and/or other materials provided with the
- *     distribution.
- *   * Neither the name of Intel Corporation nor the names of its
- *     contributors may be used to endorse or promote products derived
- *     from this software without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
- * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
- * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
- * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
- * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- */
 #include <stdio.h>
 #include <string.h>
 #include <sys/time.h>
@@ -42,6 +12,7 @@
 
 /* Global EID shared by multiple threads */
 sgx_enclave_id_t global_eid = 0;
+int offset = 13;
 
 typedef struct _sgx_errlist_t {
     sgx_status_t err;
@@ -182,6 +153,12 @@ void ocall_print_string(const char *str)
     printf("%s", str);
 }
 
+void encrypt(long N, double matrix[N]) {
+    for (int i = 0; i < N; i++) {
+        matrix[i] = matrix[i] - offset;
+    }
+}
+
 static void initialize(long length, double data[length])
 {
     for (long i = 0; i < length; i++) {
@@ -189,8 +166,6 @@ static void initialize(long length, double data[length])
     }
 }
 
-//long N;
-//long CHUNK_SIZE;
 /* Application entry */
 int SGX_CDECL main(int argc, char *argv[])
 {
@@ -220,10 +195,6 @@ int SGX_CDECL main(int argc, char *argv[])
     struct timeval stop;
     unsigned long elapsed;
 
-    // application inicializations
-//    init(argc, argv, &N, &DIM, &BSIZE);
-
-
     if (argc != 3) {
         fprintf(stderr, "Usage: %s <vector size in K> <chunk size in K> \n", argv[0]);
         return 1;
@@ -237,7 +208,9 @@ int SGX_CDECL main(int argc, char *argv[])
     double *B = (double *) malloc(N*sizeof(double));
 
     initialize(N, A);
+    encrypt(N, A);
     initialize(N, B);
+    encrypt(N, B);
 
     gettimeofday(&start,NULL);
     double s = (double)start.tv_sec + (double)start.tv_usec * .000001;
@@ -258,9 +231,6 @@ int SGX_CDECL main(int argc, char *argv[])
         // OMPSS: What are the 2 inputs and the in/out data for this task ?
         #pragma omp task in( A[i;actual_size], B[i; actual_size] ) inout( C[j;1] )
         {
-        //    C[j]=0;
-        //    for (long ii=0; ii<actual_size; ii++)
-        //        C[j]+= A[i+ii] * B[i+ii];
         ecall_dot_prod(global_eid, A, B, C, i, j, actual_size);
         }
 
