@@ -226,6 +226,17 @@ void encrypt(double *matrix, int N)
     }
 }
 
+void init_task(double *a, double *b, double *c, int bs)
+{
+        int j;
+        for (j=0; j < bs; j++){
+                a[j] = 1.0;
+                b[j] = 2.0;
+                c[j] = 0.0;
+                a[j] = 2.0E0 * a[j];
+        }
+}
+
 int SGX_CDECL main(int argc, char *argv[])
 {
     (void)(argc);
@@ -329,9 +340,13 @@ int SGX_CDECL main(int argc, char *argv[])
     for (j=0; j<N; j+=bs)
         //Assumes N is multiple of BSIZE
 #pragma omp task out ([bs]a, [bs]b, [bs]c)
-        ecall_init_task(global_eid, &a[j], &b[j], &c[j], bs);
+        init_task(&a[j], &b[j], &c[j], bs);
 #pragma omp taskwait
+    encrypt(a, bs);
+    encrypt(b, bs);
+    encrypt(c, bs);
 
+    total_time = mysecond();
     /*	--- MAIN LOOP --- repeat test cases NTIMES times --- */
 
     scalar = 3.0;
