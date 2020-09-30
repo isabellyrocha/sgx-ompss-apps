@@ -84,6 +84,12 @@ void decrypt(double* matrix, int NB) {
     }
 }
 
+void decrypt(double* matrix, double* matrix_decrypted, int NB) {
+    for (int i = 0; i < NB; i++) {
+        matrix_decrypted[i] = matrix[i] - offset;
+    }
+}
+
 void ecall_dot_prod(double *a,
                     double *b,
                     double *c, 
@@ -91,53 +97,53 @@ void ecall_dot_prod(double *a,
                     long j,
                     long bs)
 {
-            decrypt(a, bs);
-            decrypt(b, bs);
-            c[j]=0;
-            for (long ii=0; ii<bs; ii++)
-                c[j]+= a[i+ii] * b[i+ii];
-            encrypt(a, bs);
-            encrypt(b, bs);
+    decrypt(a, bs);
+    decrypt(b, bs);
+    c[j]=0;
+    for (long ii=0; ii<bs; ii++)
+        c[j]+= a[i+ii] * b[i+ii];
+    encrypt(a, bs);
+    encrypt(b, bs);
+    encrypt(c, bs);
 }
 
-void ecall_copy_task(double *a, double *c, int bs)
+void ecall_copy_task(double *a, double *c, long bs)
 {
-        decrypt(a, bs);
-        for (int j = 0; j < bs; j++)
-                c[j] = a[j];
-        encrypt(a, bs);
-        encrypt(c, bs);
+    decrypt(a, bs);
+    for (int j = 0; j < bs; j++)
+        c[j] = a[j];
+    encrypt(c, bs);
+    encrypt(a, bs);
 }
 
 void ecall_scale_task(double *b, double *c, double scalar, int bs)
 {
-        decrypt(c, bs);
-        int j;
-        for (j = 0; j < bs; j++)
-            b[j] = scalar*c[j];
-        encrypt(b, bs);
-        encrypt(c, bs);
+    decrypt(c, bs);
+    for (int j = 0; j < bs; j++)
+        b[j] = scalar*c[j];
+    encrypt(b, bs);
+    encrypt(c, bs);
         
 }
 
 void ecall_add_task(double *a, double *b, double *c, int bs)
 {
-        decrypt(a, bs);
-        decrypt(b, bs);
-        for (int j = 0; j < bs; j++)
-           c[j] = a[j]+b[j];
-        encrypt(a, bs);
-        encrypt(b, bs);
-        encrypt(c, bs);
+    decrypt(a, bs);
+    decrypt(b, bs);
+    for (int j = 0; j < bs; j++)
+       c[j] = a[j]+b[j];
+    encrypt(a, bs);
+    encrypt(b, bs);
+    encrypt(c, bs);
 }
 
 void ecall_triad_task(double *a, double *b, double *c, double scalar, int bs)
 {
-        decrypt(b, bs);
-        decrypt(c, bs);
-        for (int j = 0; j < bs; j++)
-            a[j] = b[j]+scalar*c[j];
-        encrypt(a, bs);
-        encrypt(b, bs);
-        encrypt(c, bs);
+    decrypt(b, bs);
+    decrypt(c, bs);
+    for (int j = 0; j < bs; j++)
+        a[j] = b[j]+scalar*c[j];
+    encrypt(a, bs);
+    encrypt(b, bs);
+    encrypt(c, bs);
 }
