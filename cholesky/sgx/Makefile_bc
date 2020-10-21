@@ -33,15 +33,15 @@
 CC = mcc
 MCXX = mcxx
 
-MKL_LIB_DIR=/opt/intel/mkl/lib/intel64
-MKL_INC_DIR=/opt/intel/mkl/include
+#MKL_LIB_DIR=/opt/intel/mkl/lib/intel64
+#MKL_INC_DIR=/opt/intel/mkl/include
 
 SGX_SDK ?= /opt/intel/sgxsdk
 SGX_MODE ?= HW
 SGX_ARCH ?= x64
 SGX_DEBUG ?= 1
 #LIBS  = --Wl, -L$(MKL_LIB_DIR) -lmkl_sequential -lmkl_core -lmkl_rt -llapack -L/home/xmartorell/OpenBLAS-install/lib -lopenblas #-lblas
-LIBS = -L/home/xmartorell/OpenBLAS-install/lib -lopenblas
+LIBS = --Wl,-L/home/xmartorell/OpenBLAS-install/lib -lopenblas
 INCS  = -I/home/xmartorell/OpenBLAS-install/include #-I$(MKL_INC_DIR)
 EXTRA = -std=c99 -O3 -Wall -Wno-unused
 
@@ -52,7 +52,7 @@ else ifeq ($(findstring -m32, $(CXXFLAGS)), -m32)
 endif
 
 ifeq ($(SGX_ARCH), x86)
-	SGX_COMMON_FLAGS := -m32 --Wl,-L$(MKL_LIB_DIR) #-lmkl_sequential -lmkl_core -lmkl_rt
+	SGX_COMMON_FLAGS := -m32 --Wl,-L$(LIBS) #-lmkl_sequential -lmkl_core -lmkl_rt
 	SGX_LIBRARY_PATH := $(SGX_SDK)/lib
 	SGX_ENCLAVE_SIGNER := $(SGX_SDK)/bin/x86/sgx_sign
 	SGX_EDGER8R := $(SGX_SDK)/bin/x86/sgx_edger8r
@@ -79,7 +79,7 @@ SGX_COMMON_FLAGS += -Wall -Wextra -Winit-self -Wpointer-arith -Wreturn-type \
                     -Waddress -Wsequence-point -Wformat-security \
                     -Wmissing-include-dirs -Wfloat-equal -Wundef -Wshadow \
                     -Wcast-align -Wcast-qual -Wconversion -Wredundant-decls \
-                    -std=c99 -O3 -Wall -Wno-unused -I$(MKL_INC_DIR)
+                    -std=c99 -O3 -Wall -Wno-unused $(INCS) #-I$(MKL_INC_DIR)
 SGX_COMMON_CFLAGS := $(SGX_COMMON_FLAGS) -Wjump-misses-init -Wstrict-prototypes -Wunsuffixed-float-constants
 SGX_COMMON_CXXFLAGS := $(SGX_COMMON_FLAGS) -Wnon-virtual-dtor -std=c++11 $($LIBS)  #--Wl,-L$(MKL_LIB_DIR) -lmkl_sequential -lmkl_core -lmkl_rt -L/home/xmartorell/OpenBLAS-install/lib -lopenblas
 
@@ -92,7 +92,7 @@ else
 endif
 
 App_Cpp_Files := App/App.cpp $(wildcard App/Edger8rSyntax/*.cpp) $(wildcard App/TrustedLibrary/*.cpp)
-App_Include_Paths := -IInclude -IApp -I$(SGX_SDK)/include #-I$(MKL_INC_DIR)
+App_Include_Paths := -IInclude -IApp -I$(SGX_SDK)/include $(INCS) #-I$(MKL_INC_DIR)
 
 App_C_Flags := -fPIC -Wno-attributes $(App_Include_Paths) --ompss
 
@@ -108,7 +108,7 @@ else
         App_C_Flags += -DNDEBUG -UEDEBUG -UDEBUG
 endif
 
-App_Cpp_Flags := $(App_C_Flags) -std=c++11 -lpthread --ompss -std=c99 -O3 -Wall -Wno-unused #-I$(MKL_INC_DIR)
+App_Cpp_Flags := $(App_C_Flags) -std=c++11 -lpthread --ompss -std=c99 -O3 -Wall -Wno-unused $(INCS) #-I$(MKL_INC_DIR)
 App_Link_Flags := -L$(SGX_LIBRARY_PATH) -l$(Urts_Library_Name) -lpthread --ompss $(LIBS)
 
 App_Cpp_Objects := $(App_Cpp_Files:.cpp=.o)
@@ -127,7 +127,7 @@ endif
 Crypto_Library_Name := sgx_tcrypto
 
 Enclave_Cpp_Files := Enclave/Enclave.cpp $(wildcard Enclave/Edger8rSyntax/*.cpp) $(wildcard Enclave/TrustedLibrary/*.cpp)
-Enclave_Include_Paths := -IInclude -IEnclave -I$(SGX_SDK)/include -I$(SGX_SDK)/include/tlibc -I$(SGX_SDK)/include/libcxx #-I$(MKL_INC_DIR)
+Enclave_Include_Paths := -IInclude -IEnclave -I$(SGX_SDK)/include -I$(SGX_SDK)/include/tlibc -I$(SGX_SDK)/include/libcxx $(INCS) #-I$(MKL_INC_DIR)
 
 Enclave_C_Flags := $(Enclave_Include_Paths) -nostdinc -fvisibility=hidden -fpie -ffunction-sections -fdata-sections
 CC_BELOW_4_9 := $(shell expr "`$(CC) -dumpversion`" \< "4.9")
@@ -185,7 +185,7 @@ endif
 
 .PHONY: all target run
 all: .config_$(Build_Mode)_$(SGX_ARCH)
-	$(MAKE) target
+	@$(MAKE) target
 
 ifeq ($(Build_Mode), HW_RELEASE)
 target:  $(App_Name) $(Enclave_Name)
@@ -215,59 +215,59 @@ endif
 
 run: all
 ifneq ($(Build_Mode), HW_RELEASE)
-	$(CURDIR)/$(App_Name)
+	@$(CURDIR)/$(App_Name)
 	@echo "RUN  =>  $(App_Name) [$(SGX_MODE)|$(SGX_ARCH), OK]"
 endif
 
 .config_$(Build_Mode)_$(SGX_ARCH):
-	rm -f .config_* $(App_Name) $(Enclave_Name) $(Signed_Enclave_Name) $(App_Cpp_Objects) App/Enclave_u.* $(Enclave_Cpp_Objects) Enclave/Enclave_t.*
-	touch .config_$(Build_Mode)_$(SGX_ARCH)
+	@rm -f .config_* $(App_Name) $(Enclave_Name) $(Signed_Enclave_Name) $(App_Cpp_Objects) App/Enclave_u.* $(Enclave_Cpp_Objects) Enclave/Enclave_t.*
+	@touch .config_$(Build_Mode)_$(SGX_ARCH)
 
 ######## App Objects ########
 
 App/Enclave_u.h: $(SGX_EDGER8R) Enclave/Enclave.edl
-	cd App && $(SGX_EDGER8R) --untrusted ../Enclave/Enclave.edl --search-path ../Enclave --search-path $(SGX_SDK)/include
+	@cd App && $(SGX_EDGER8R) --untrusted ../Enclave/Enclave.edl --search-path ../Enclave --search-path $(SGX_SDK)/include
 	@echo "GEN  =>  $@"
 
 App/Enclave_u.c: App/Enclave_u.h
 
 App/Enclave_u.o: App/Enclave_u.c
-	$(CC) $(SGX_COMMON_CFLAGS) $(App_C_Flags) $(EXTRA) $(INCS) -c -o $@ $< $(LIBS)
+	@$(CC) $(SGX_COMMON_CFLAGS) $(App_C_Flags) $(EXTRA) $(INCS) -c -o $@ $< $(LIBS)
 	@echo "CC   <=  $<"
 
-App/%.o: App/%.cpp  App/Enclave_u.h $(MKL_CHECK)
-	$(MCXX) $(SGX_COMMON_CXXFLAGS) $(App_Cpp_Flags) $(EXTRA) $(INCS) -c -o $@ $< $(LIBS)
+App/%.o: App/%.cpp  App/Enclave_u.h #$(MKL_CHECK)
+	@$(MCXX) $(SGX_COMMON_CXXFLAGS) $(App_Cpp_Flags) $(EXTRA) $(INCS) -c -o $@ $< $(LIBS)
 	@echo "CXX  <=  $<" $(LIBS)
 
 $(App_Name): App/Enclave_u.o $(App_Cpp_Objects)
-	$(MCXX) $^ $(App_Link_Flags) $(EXTRA) $(INCS) -o $@ $(LIBS)
+	@$(MCXX) $^ $(App_Link_Flags) $(EXTRA) $(INCS) -o $@ $< $(LIBS)
 	@echo "LINK =>  $@"
 
 ######## Enclave Objects ########
 
 Enclave/Enclave_t.h: $(SGX_EDGER8R) Enclave/Enclave.edl
-	cd Enclave && $(SGX_EDGER8R) --trusted ../Enclave/Enclave.edl --search-path ../Enclave --search-path $(SGX_SDK)/include
+	@cd Enclave && $(SGX_EDGER8R) --trusted ../Enclave/Enclave.edl --search-path ../Enclave --search-path $(SGX_SDK)/include
 	@echo "GEN  =>  $@"
 
 Enclave/Enclave_t.c: Enclave/Enclave_t.h
 
 Enclave/Enclave_t.o: Enclave/Enclave_t.c
-	$(CC) $(SGX_COMMON_CFLAGS) $(Enclave_C_Flags) $(LIBS) -c $< -o $@
+	@$(CC) $(SGX_COMMON_CFLAGS) $(Enclave_C_Flags) $(LIBS) -c $< -o $@
 	@echo "CC   <=  $<"
 
 Enclave/%.o: Enclave/%.cpp Enclave/Enclave_t.h
-	$(CXX) $(SGX_COMMON_CXXFLAGS) $(Enclave_Cpp_Flags) $(LIBS) -c $< -o $@
+	@$(CXX) $(SGX_COMMON_CXXFLAGS) $(Enclave_Cpp_Flags) $(LIBS) -c $< -o $@
 	@echo "CXX  <=  $<"
 
 $(Enclave_Name): Enclave/Enclave_t.o $(Enclave_Cpp_Objects)
-	$(CXX) $^ -o $@ $(Enclave_Link_Flags) $(LIBS)
+	@$(CXX) $^ -o $@ $(Enclave_Link_Flags) $(LIBS)
 	@echo "LINK =>  $@"
 
 $(Signed_Enclave_Name): $(Enclave_Name)
-	$(SGX_ENCLAVE_SIGNER) sign -key Enclave/Enclave_private.pem -enclave $(Enclave_Name) -out $@ -config $(Enclave_Config_File) 
+	@$(SGX_ENCLAVE_SIGNER) sign -key Enclave/Enclave_private.pem -enclave $(Enclave_Name) -out $@ -config $(Enclave_Config_File) 
 	@echo "SIGN =>  $@"
 
 .PHONY: clean
 
 clean:
-	rm -f .config_* $(App_Name) $(Enclave_Name) $(Signed_Enclave_Name) $(App_Cpp_Objects) App/Enclave_u.* $(Enclave_Cpp_Objects) Enclave/Enclave_t.*
+	@rm -f .config_* $(App_Name) $(Enclave_Name) $(Signed_Enclave_Name) $(App_Cpp_Objects) App/Enclave_u.* $(Enclave_Cpp_Objects) Enclave/Enclave_t.*

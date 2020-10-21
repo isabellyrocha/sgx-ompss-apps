@@ -309,7 +309,7 @@ int SGX_CDECL main(int argc, char *argv[])
 #endif
 
    convert_to_blocks(ts, nt, n, (double **)  matrix, (double **) &Ah);
-   convert_to_blocks(ts, nt, n, (double **) matrix, Ah);
+//   convert_to_blocks(ts, nt, n, (double **) matrix, Ah);
 
    const float t1 = get_time();
    cholesky_blocked(ts, nt, Ah);
