@@ -14,6 +14,7 @@
 # include <unistd.h>
 # include <pwd.h>
 # define MAX_PATH FILENAME_MAX
+# define VERBOSE
 #include <nanos_omp.h>
 #include "sgx_urts.h"
 #include "App.h"
@@ -201,29 +202,29 @@ void omp_gemm(double *A, double *B, double *C, int ts, int ld)
    dgemm_(&NT, &TR, &ts, &ts, &ts, &DMONE, A, &ld, B, &ld, &DONE, C, &ld);
 }
 
-void cholesky_blocked(const int ts, const int nt, double** Ah)
-//void cholesky_blocked(const int ts, const int nt, double* Ah)
+//void cholesky_blocked(const int ts, const int nt, double** Ah)
+void cholesky_blocked(const int ts, const int nt, double* Ah[nt][nt])
 {
    for (int k = 0; k < nt; k++) {
 
       // Diagonal Block factorization
 #pragma omp task inout([ts][ts]Ah)
-      omp_potrf (&Ah[k][k], ts, ts);
+      omp_potrf (Ah[k][k], ts, ts);
 
       // Triangular systems
       for (int i = k + 1; i < nt; i++) {
 #pragma omp task in([ts][ts]Ah) inout([ts][ts]Ah)
-         omp_trsm (&Ah[k][k], &Ah[k][i], ts, ts);
+         omp_trsm (Ah[k][k], Ah[k][i], ts, ts);
       }
 
       // Update trailing matrix
       for (int i = k + 1; i < nt; i++) {
          for (int j = k + 1; j < i; j++) {
 #pragma omp task in([ts][ts]Ah, [ts][ts]Ah) inout([ts][ts]Ah)
-            omp_gemm (&Ah[k][i], &Ah[k][j], &Ah[j][i], ts, ts);
+            omp_gemm (Ah[k][i], Ah[k][j], Ah[j][i], ts, ts);
          }
 #pragma omp task in([ts][ts]Ah) inout([ts][ts]Ah)
-         omp_syrk (&Ah[k][i], &Ah[i][i], ts, ts);
+         omp_syrk (Ah[k][i], Ah[i][i], ts, ts);
       }
 
    }
@@ -288,19 +289,23 @@ int SGX_CDECL main(int argc, char *argv[])
    const int nt = n / ts;
 
    // Allocate blocked matrix
-   double **Ah = (double **) malloc(ts*ts*ts*sizeof(double *));
+//   double **Ah = (double **) malloc(nt*nt*sizeof(double* ));
 
-   for (int i = 0; i < nt*nt; i++) {
-        Ah[i]= (double *) malloc(ts * ts * sizeof(double));
-   }
-//   for (int i = 0; i < nt; i++) {
-//      for (int j = 0; j < nt; j++) {
-//         Ah[i][j] = malloc(sizeof(double));
-//         assert(Ah[i][j] != NULL);
-//      }
+//   for (int i = 0; i < nt*nt; i++) {
+//        Ah[i]= (double *) malloc(ts * ts * sizeof(double));
 //   }
 
-   for (int i = 0; i < n * n; i++ ) {
+
+   double *Ah[nt][nt];
+
+   for (int i = 0; i < nt; i++) {
+      for (int j = 0; j < nt; j++) {
+         Ah[i][j] = malloc(ts * ts * sizeof(double));
+         assert(Ah[i][j] != NULL);
+      }
+   }
+
+   for (int i = 0; i < nt * nt; i++ ) {
       original_matrix[i] = matrix[i];
    }
 
@@ -308,8 +313,11 @@ int SGX_CDECL main(int argc, char *argv[])
    printf ("Executing ...\n");
 #endif
 
-   convert_to_blocks(ts, nt, n, (double **)  matrix, (double **) &Ah);
-//   convert_to_blocks(ts, nt, n, (double **) matrix, Ah);
+
+   convert_to_blocks(ts, nt, n, (double(*)[n]) matrix, Ah);
+#ifdef VERBOSE
+   printf ("Convert to blocks done...\n");
+#endif
 
    const float t1 = get_time();
    cholesky_blocked(ts, nt, Ah);

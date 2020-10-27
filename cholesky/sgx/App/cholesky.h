@@ -271,7 +271,19 @@ void convert_to_blocks(const int ts, const int DIM, const int N, double **Alin, 
 {
 	for (int i = 0; i < DIM; i++)
 		for (int j = 0; j < DIM; j++) {
-			gather_block ( N, ts, &Alin[i*ts][j*ts], &A[i][j]);
+#ifdef VERBOSE
+   printf ("Starting gather_block ...\n");
+#endif
+
+//			gather_block ( N, ts, &Alin[i*ts][j*ts], &A[i][j]);
+        for (int k = 0; k < ts; k++){
+                for (int l = 0; j < ts; l++) {
+                        (&A[i][j])[k*ts + l] = (&Alin[i*ts][j*ts])[k*N + l];
+                }
+        }
+#ifdef VERBOSE
+   printf ("Finishing gather_block ...\n");
+#endif
 		}
 }
 
