@@ -3,8 +3,6 @@
 #include <sys/time.h>
 #include <sys/times.h>
 
-extern "C" {
-
 void dgemm_ (const char *transa, const char *transb, int *l, int *n, int *m, double *alpha,
              const void *a, int *lda, void *b, int *ldb, double *beta, void *c, int *ldc);
 void dtrsm_ (char *side, char *uplo, char *transa, char *diag, int *m, int *n, double *alpha,
@@ -13,8 +11,6 @@ void dtrmm_ (char *side, char *uplo, char *transa, char *diag, int *m, int *n, d
              double *a, int *lda, double *b, int *ldb);
 void dsyrk_ (char *uplo, char *trans, int *n, int *k, double *alpha, double *a, int *lda,
              double *beta, double *c, int *ldc);
-
-};
 
 enum blas_order_type {
             blas_rowmajor = 101,
@@ -114,7 +110,7 @@ static double BLAS_dfpinfo(enum blas_cmach_type cmach)
 	// for (i = 0; i >= m; --i) r *= half;
 	const double r = BLAS_dpow_di( b, m-1 );
 
-	double o = 1.0;
+	double o = 1.0; 
 	o -= eps;
 	// for (i = 0; i < l; ++i) o *= b;
 	o = (o * BLAS_dpow_di( b, l-1 )) * b;
@@ -211,7 +207,7 @@ static int check_factorization(int N, double *A1, double *A2, int LDA, char uplo
 #endif
 
 	const int info_factorization = isnan(Rnorm/(Anorm*N*eps)) ||
-								   isinf(Rnorm/(Anorm*N*eps)) ||
+								   isinf(Rnorm/(Anorm*N*eps)) || 
 								   (Rnorm/(Anorm*N*eps) > 60.0);
 
 #ifdef VERBOSE
@@ -267,32 +263,19 @@ static void scatter_block(const int N, const int ts, double *A, double *Alin)
 		}
 }
 
-void convert_to_blocks(const int ts, const int DIM, const int N, double **Alin, double **A)
+static void convert_to_blocks(const int ts, const int DIM, const int N, double Alin[N][N], double *A[DIM][DIM])
 {
 	for (int i = 0; i < DIM; i++)
 		for (int j = 0; j < DIM; j++) {
-#ifdef VERBOSE
-   printf ("Starting gather_block ...\n");
-#endif
-
-//			gather_block ( N, ts, &Alin[i*ts][j*ts], &A[i][j]);
-        for (int k = 0; k < ts; k++){
-                for (int l = 0; j < ts; l++) {
-                        (&A[i][j])[k*ts + l] = (&Alin[i*ts][j*ts])[k*N + l];
-                }
-        }
-#ifdef VERBOSE
-   printf ("Finishing gather_block ...\n");
-#endif
+			gather_block ( N, ts, &Alin[i*ts][j*ts], A[i][j]);
 		}
 }
 
-static void convert_to_linear(const int ts, const int DIM, const int N, double **A, double **Alin)
-//static void convert_to_linear(const int ts, const int DIM, const int N, double *A, double *Alin)
+static void convert_to_linear(const int ts, const int DIM, const int N, double *A[DIM][DIM], double Alin[N][N])
 {
 	for (int i = 0; i < DIM; i++)
 		for (int j = 0; j < DIM; j++) {
-			scatter_block ( N, ts, &A[i][j], &Alin[i*ts][j*ts]);
+			scatter_block ( N, ts, A[i][j], (double *) &Alin[i*ts][j*ts]);
 		}
 }
 
@@ -303,4 +286,6 @@ static double * malloc_block (const int ts)
 
 	return block;
 }
+
+
 

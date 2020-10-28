@@ -276,7 +276,7 @@ int SGX_CDECL main(int argc, char *argv[])
    int check    = atoi(argv[3]); // check result?
 
    // Allocate matrix
-   double * matrix = (double *) malloc(n * n * sizeof(double));
+   double * const matrix = (double *) malloc(n * n * sizeof(double));
    assert(matrix != NULL);
 
    // Init matrix
@@ -289,13 +289,6 @@ int SGX_CDECL main(int argc, char *argv[])
    const int nt = n / ts;
 
    // Allocate blocked matrix
-//   double **Ah = (double **) malloc(nt*nt*sizeof(double* ));
-
-//   for (int i = 0; i < nt*nt; i++) {
-//        Ah[i]= (double *) malloc(ts * ts * sizeof(double));
-//   }
-
-
    double *Ah[nt][nt];
 
    for (int i = 0; i < nt; i++) {
@@ -305,7 +298,7 @@ int SGX_CDECL main(int argc, char *argv[])
       }
    }
 
-   for (int i = 0; i < nt * nt; i++ ) {
+   for (int i = 0; i < n * n; i++ ) {
       original_matrix[i] = matrix[i];
    }
 
@@ -313,17 +306,13 @@ int SGX_CDECL main(int argc, char *argv[])
    printf ("Executing ...\n");
 #endif
 
-
    convert_to_blocks(ts, nt, n, (double(*)[n]) matrix, Ah);
-#ifdef VERBOSE
-   printf ("Convert to blocks done...\n");
-#endif
 
    const float t1 = get_time();
-   cholesky_blocked(ts, nt, Ah);
+   cholesky_blocked(ts, nt, (double* (*)[nt]) Ah);
 
    const float t2 = get_time() - t1;
-   convert_to_linear(ts, nt, n, (double **) Ah, (double **) matrix);
+   convert_to_linear(ts, nt, n, Ah, (double (*)[n]) matrix);
 
    if ( check ) {
       const char uplo = 'L';
@@ -349,15 +338,14 @@ int SGX_CDECL main(int argc, char *argv[])
 #endif
 
    // Free blocked matrix
-  // for (int i = 0; i < nt; i++) {
-  //    for (int j = 0; j < nt; j++) {
-   //      assert(Ah[i][j] != NULL);
-   //      free(Ah[i][j]);
-    //  }
-  // }
+   for (int i = 0; i < nt; i++) {
+      for (int j = 0; j < nt; j++) {
+         assert(Ah[i][j] != NULL);
+         free(Ah[i][j]);
+      }
+   }
 
    // Free matrix
-   free(Ah);
    free(matrix);
 
 /* ------------------------------------------------------------------------------------------------------------------------*/
