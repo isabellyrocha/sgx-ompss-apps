@@ -203,28 +203,28 @@ void omp_gemm(double *A, double *B, double *C, int ts, int ld)
 }
 
 //void cholesky_blocked(const int ts, const int nt, double** Ah)
-void cholesky_blocked(const int ts, const int nt, double* Ah[nt][nt])
+void cholesky_blocked(const int ts, const int nt, double** Ah)
 {
    for (int k = 0; k < nt; k++) {
 
       // Diagonal Block factorization
 #pragma omp task inout([ts][ts]Ah)
-      omp_potrf (Ah[k][k], ts, ts);
+      omp_potrf (Ah[k*nt+k], ts, ts);
 
       // Triangular systems
       for (int i = k + 1; i < nt; i++) {
 #pragma omp task in([ts][ts]Ah) inout([ts][ts]Ah)
-         omp_trsm (Ah[k][k], Ah[k][i], ts, ts);
+         omp_trsm (Ah[k*nt+k], Ah[k*nt+k], ts, ts);
       }
 
       // Update trailing matrix
       for (int i = k + 1; i < nt; i++) {
          for (int j = k + 1; j < i; j++) {
 #pragma omp task in([ts][ts]Ah, [ts][ts]Ah) inout([ts][ts]Ah)
-            omp_gemm (Ah[k][i], Ah[k][j], Ah[j][i], ts, ts);
+            omp_gemm (Ah[k*nt+k], Ah[k*nt+k], Ah[j*nt+i], ts, ts);
          }
 #pragma omp task in([ts][ts]Ah) inout([ts][ts]Ah)
-         omp_syrk (Ah[k][i], Ah[i][i], ts, ts);
+         omp_syrk (Ah[k*nt+i], Ah[i*nt+i], ts, ts);
       }
 
    }
@@ -289,13 +289,13 @@ int SGX_CDECL main(int argc, char *argv[])
    const int nt = n / ts;
 
    // Allocate blocked matrix
-   double *Ah[nt][nt];
+   double** Ah = (double **) malloc(nt*nt*sizeof(double *));
 
-   for (int i = 0; i < nt; i++) {
-      for (int j = 0; j < nt; j++) {
-         Ah[i][j] = malloc(ts * ts * sizeof(double));
-         assert(Ah[i][j] != NULL);
-      }
+   for (int i = 0; i < nt*nt; i++) {
+      //for (int j = 0; j < nt; j++) {
+         Ah[i] = (double*) malloc(ts * ts * sizeof(double));
+         assert(Ah[i] != NULL);
+      //}
    }
 
    for (int i = 0; i < n * n; i++ ) {
@@ -306,13 +306,25 @@ int SGX_CDECL main(int argc, char *argv[])
    printf ("Executing ...\n");
 #endif
 
-   convert_to_blocks(ts, nt, n, (double(*)[n]) matrix, Ah);
+//   convert_to_blocks(ts, nt, n, (double(*)[n]) matrix, Ah);
+    // Convert to blocks
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            ((double * (*) [nt])Ah)[i/ts][j/ts][(i%ts)*ts+j%ts] = matrix[i*n+j];
+        }
+    }
 
    const float t1 = get_time();
-   cholesky_blocked(ts, nt, (double* (*)[nt]) Ah);
+   cholesky_blocked(ts, nt, Ah);
 
    const float t2 = get_time() - t1;
-   convert_to_linear(ts, nt, n, Ah, (double (*)[n]) matrix);
+   //convert_to_linear(ts, nt, n, Ah, (double (*)[n]) matrix);
+    for (int i = 0; i < n; i++) {
+        for (int j = 0; j < n; j++) {
+            //((double * (*) [nt])Ah)[i/ts][j/ts][(i%ts)*ts+j%ts] = matrix[i*n+j];
+            matrix[i*n+j] = ((double * (*) [nt])Ah)[i/ts][j/ts][(i%ts)*ts+j%ts]; 
+       }
+    }
 
    if ( check ) {
       const char uplo = 'L';
@@ -338,15 +350,16 @@ int SGX_CDECL main(int argc, char *argv[])
 #endif
 
    // Free blocked matrix
-   for (int i = 0; i < nt; i++) {
-      for (int j = 0; j < nt; j++) {
-         assert(Ah[i][j] != NULL);
-         free(Ah[i][j]);
-      }
+   for (int i = 0; i < nt*nt; i++) {
+      //for (int j = 0; j < nt; j++) {
+         assert(Ah[i] != NULL);
+         free(Ah[i]);
+      //}
    }
 
    // Free matrix
    free(matrix);
+   free(Ah);
 
 /* ------------------------------------------------------------------------------------------------------------------------*/
 

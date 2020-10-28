@@ -163,7 +163,7 @@ int main(int argc, char *argv[])
 // performance in MFLOPS
 //  printf("MFLOPS: %lu\n", (unsigned long)((((double)N)*((double)N)*((double)N)*2)/elapsed));
 
-  printf("%d,%d,%f", (int)s, (int)e, (e-s));
+  printf("%d,%d,%f\n", (int)s, (int)e, (e-s));
 
   return 0;
 }

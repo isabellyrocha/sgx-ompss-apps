@@ -3,6 +3,8 @@
 #include <sys/time.h>
 #include <sys/times.h>
 
+extern "C" {
+
 void dgemm_ (const char *transa, const char *transb, int *l, int *n, int *m, double *alpha,
              const void *a, int *lda, void *b, int *ldb, double *beta, void *c, int *ldc);
 void dtrsm_ (char *side, char *uplo, char *transa, char *diag, int *m, int *n, double *alpha,
@@ -11,6 +13,8 @@ void dtrmm_ (char *side, char *uplo, char *transa, char *diag, int *m, int *n, d
              double *a, int *lda, double *b, int *ldb);
 void dsyrk_ (char *uplo, char *trans, int *n, int *k, double *alpha, double *a, int *lda,
              double *beta, double *c, int *ldc);
+
+};
 
 enum blas_order_type {
             blas_rowmajor = 101,
@@ -246,7 +250,7 @@ void initialize_matrix(const int n, const int ts, double *matrix)
 
 	add_to_diag(matrix, n, (double) n);
 }
-
+/*
 static void gather_block(const int N, const int ts, double *Alin, double *A)
 {
 	for (int i = 0; i < ts; i++)
@@ -278,7 +282,7 @@ static void convert_to_linear(const int ts, const int DIM, const int N, double *
 			scatter_block ( N, ts, A[i][j], (double *) &Alin[i*ts][j*ts]);
 		}
 }
-
+*/
 static double * malloc_block (const int ts)
 {
 	double * const block = (double *) malloc(ts * ts * sizeof(double));
