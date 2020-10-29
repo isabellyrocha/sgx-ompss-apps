@@ -87,5 +87,5 @@ int main(int argc, char **argv) {
 //    printf ("%lu;\n", elapsed);
 //    printf("MFLOPS: %lu\n", (unsigned long)((((float)N)*((float)N)*((float)N)*2)/elapsed));
 
-    printf("%d,%d,%f", (int)s, (int)e, (e-s));
+    printf("%d,%d,%f\n", (int)s, (int)e, (e-s));
 }

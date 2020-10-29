@@ -247,9 +247,9 @@ int SGX_CDECL main(int argc, char *argv[])
     gettimeofday(&stop,NULL);
     double e =(double)stop.tv_sec + (double)stop.tv_usec * .000001;
 
-    printf("\nMarking starting point.. Timestamp: %f.", s);
-    printf("\nMarking starting point.. Timestamp: %f.", e);
-    printf("\nInference completed in %f seconds.", (e-s));
+//    printf("\nMarking starting point.. Timestamp: %f.", s);
+//    printf("\nMarking starting point.. Timestamp: %f.", e);
+//    printf("\nInference completed in %f seconds.", (e-s));
 
     elapsed = 1000000 * (stop.tv_sec - start.tv_sec);
     elapsed += stop.tv_usec - start.tv_usec;
@@ -260,17 +260,17 @@ int SGX_CDECL main(int argc, char *argv[])
         printf ("%d;\t\n", omp_get_num_threads() );
     #endif
 
-    printf("\nResult of Dot product i= %le\n", result);
+//    printf("\nResult of Dot product i= %le\n", result);
     // time in usecs
-    printf("time: ");
-    printf ("%lu;\t", elapsed);
+//    printf("time: ");
+//    printf ("%lu;\t", elapsed);
     // performance in MFLOPS
-    printf("MFLOPS: %lu\n", (unsigned long)((((float)N)*((float)N)*((float)N)*2)/elapsed));
+//    printf("MFLOPS: %lu\n", (unsigned long)((((float)N)*((float)N)*((float)N)*2)/elapsed));
 
     /* Destroy the enclave */
     sgx_destroy_enclave(global_eid);
     
-    printf("Info: SampleEnclave successfully returned.\n");
+//    printf("Info: SampleEnclave successfully returned.\n");
 
 
     printf("%d,%d,%f\n", (int) s, (int) e, (e-s));
