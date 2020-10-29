@@ -126,6 +126,7 @@ int main(int argc, char *argv[])
     gettimeofday(&start,NULL);
     double s = (double)start.tv_sec + (double)start.tv_usec * .000001;
 
+#ifdef VERBOSE
     printf(HLINE);
     printf("STREAM version $Revision: 5.8 $\n");
     printf(HLINE);
@@ -139,31 +140,32 @@ int main(int argc, char *argv[])
 	(3.0 * BytesPerWord) * ( (double) N / 1048576.0));
     printf("Each test is run %d times, but only\n", NTIMES);
     printf("the *best* time for each is used.\n");
+    printf(HLINE);
+#endif
 
 #ifdef OmpSs
-    printf(HLINE);
     k = omp_get_num_threads();
-    printf ("Number of Threads = %i\n",k);
+    //printf ("Number of Threads = %i\n",k);
 #endif
 #ifdef SMPSs
-    printf("CSS_NUM_CPUS %s \n", getenv("CSS_NUM_CPUS"));
+    //printf("CSS_NUM_CPUS %s \n", getenv("CSS_NUM_CPUS"));
     k = atoi (getenv ("CSS_NUM_CPUS"));
-    printf ("Number of CSS Threads = %i\n",k);
+    //printf ("Number of CSS Threads = %i\n",k);
 #endif
 #ifdef CellSs
-    printf(HLINE);
+    //printf(HLINE);
     k = atoi (getenv ("CSS_NUM_SPUS"));
-    printf ("Number of CSS Threads = %i\n",k);
+    //printf ("Number of CSS Threads = %i\n",k);
 #endif
 #ifdef CellSs_tracing
-    printf(HLINE);
+    //printf(HLINE);
     k = atoi (getenv ("CSS_NUM_SPUS"));
-    printf ("Number of CSS Threads = %i\n",k);
+    //printf ("Number of CSS Threads = %i\n",k);
 #endif
 
-    printf(HLINE);
+    //printf(HLINE);
 
-    printf ("Printing one line per active thread....\n");
+    //printf ("Printing one line per active thread....\n");
 
     double   __attribute__((aligned(4096)))   *a = (double*) malloc(N*sizeof(double));
     double   __attribute__((aligned(4096)))   *b = (double*) malloc(N*sizeof(double));
@@ -255,7 +257,7 @@ int main(int argc, char *argv[])
     total_time = mysecond() - total_time;
 #pragma omp taskwait
 
-    printf("%d,%d,%d,%f\n", omp_get_num_threads(), (int)s, (int)e, (e-s));
+    printf("%d,%d,%f\n", (int)s, (int)e, (e-s));
     /*	--- SUMMARY --- */
 
     for (k=1; k<NTIMES; k++) /* note -- skip first iteration */ {
@@ -266,6 +268,7 @@ int main(int argc, char *argv[])
 	}
     }
 
+#ifdef VERBOSE
     printf("Function      Rate (MB/s)   Avg time     Min time     Max time\n");
     for (j=0; j<4; j++) {
 	avgtime[j] = avgtime[j]/(double)(NTIMES-1);
@@ -278,8 +281,8 @@ int main(int argc, char *argv[])
     }
 
     printf(HLINE);
-
     printf("TOTAL time (including initialization) =  %11.4f seconds\n", total_time);
+#endif
     /* --- Check Results --- */
 
     // checkSTREAMresults(a, b, c, BSIZE);
@@ -323,7 +326,7 @@ int main(int argc, char *argv[])
 #define abs(a) ((a) >= 0 ? (a) : -(a))
 #endif
     epsilon = 1.e-8;
-
+#ifdef VERBOSE
     if (abs(aj-asum)/asum > epsilon) {
 	printf ("Failed Validation on array a[]\n");
 	printf ("        Expected  : %f \n",aj);
@@ -339,8 +342,8 @@ int main(int argc, char *argv[])
     } else {
         printf ("Solution Validates\n");
     }
-
     printf(HLINE);
+#endif
 
     return 0;
 }

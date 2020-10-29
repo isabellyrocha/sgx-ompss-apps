@@ -357,7 +357,7 @@ int SGX_CDECL main(int argc, char *argv[])
     int                 bs = N/atoi(argv[2]); //N/64;
 
     /* --- SETUP --- determine precision and check timing --- */
-
+#ifdef VERBOSE
     printf(HLINE);
     printf("STREAM version $Revision: 5.8 $\n");
     printf(HLINE);
@@ -396,7 +396,7 @@ int SGX_CDECL main(int argc, char *argv[])
     printf(HLINE);
 
     printf ("Printing one line per active thread....\n");
-
+#endif
     double   __attribute__((aligned(4096)))   *a = (double*) malloc(N*sizeof(double));
     double   __attribute__((aligned(4096)))   *b = (double*) malloc(N*sizeof(double));
     double   __attribute__((aligned(4096)))   *c = (double*) malloc(N*sizeof(double));
@@ -496,7 +496,7 @@ int SGX_CDECL main(int argc, char *argv[])
 	    maxtime[j] = MAX(maxtime[j], times[j][k]);
 	}
     }
-
+#ifdef VERBOSE
     printf("Function      Rate (MB/s)   Avg time     Min time     Max time\n");
     for (j=0; j<4; j++) {
 	avgtime[j] = avgtime[j]/(double)(NTIMES-1);
@@ -512,7 +512,7 @@ int SGX_CDECL main(int argc, char *argv[])
 
     printf("TOTAL time (including initialization) =  %11.4f seconds\n", total_time);
     /* --- Check Results --- */
-
+#endif
     // checkSTREAMresults(a, b, c, BSIZE);
     double aj,bj,cj;//,scalar;
     double asum,bsum,csum;
@@ -553,6 +553,8 @@ int SGX_CDECL main(int argc, char *argv[])
 #ifndef abs
 #define abs(a) ((a) >= 0 ? (a) : -(a))
 #endif
+
+#ifdef VERBOSE
     epsilon = 1.e-8;
 
     if (abs(aj-asum)/asum > epsilon) {
@@ -572,9 +574,9 @@ int SGX_CDECL main(int argc, char *argv[])
     }
 
     printf(HLINE);
-
+#endif
 /* ------------------------------------------------------------------------------------------------------------------------*/
-
+#ifdef VERBOSE
     printf("\nMarking starting point.. Timestamp: %f.", s);
     printf("\nMarking starting point.. Timestamp: %f.", e);
     printf("\nInference completed in %f seconds.", (e-s));
@@ -593,12 +595,13 @@ int SGX_CDECL main(int argc, char *argv[])
     printf ("%lu;\t", elapsed);
     // performance in MFLOPS
     printf("MFLOPS: %lu\n", (unsigned long)((((float)N)*((float)N)*((float)N)*2)/elapsed));
+#endif
     }
 
     /* Destroy the enclave */
     sgx_destroy_enclave(global_eid);
     
-    printf("Info: SampleEnclave successfully returned.\n");
+    //printf("Info: SampleEnclave successfully returned.\n");
 
     return 0;
 }
