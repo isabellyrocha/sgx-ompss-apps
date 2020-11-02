@@ -3,6 +3,9 @@ CONFIG_DIR=.config
 
 GFLAGS=
 
+MKL_LIB_DIR=/opt/intel/mkl/lib/intel64
+MKL_INC_DIR=/opt/intel/mkl/include
+
 PARAVER=extrae.xml trace.sh
 GRAPH=graph.sh
 SCRIPTS=run-once.sh multirun.sh

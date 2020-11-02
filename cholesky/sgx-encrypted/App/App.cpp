@@ -366,7 +366,7 @@ int SGX_CDECL main(int argc, char *argv[])
 
     gettimeofday(&stop,NULL);
     double e =(double)stop.tv_sec + (double)stop.tv_usec * .000001;
-
+#ifdef VERBOSE
     printf("\nMarking starting point.. Timestamp: %f.", s);
     printf("\nMarking starting point.. Timestamp: %f.", e);
     printf("\nInference completed in %f seconds.", (e-s));
@@ -385,12 +385,16 @@ int SGX_CDECL main(int argc, char *argv[])
     printf ("%lu;\t", elapsed);
     // performance in MFLOPS
     printf("MFLOPS: %lu\n", (unsigned long)((((float)n)*((float)n)*((float)n)*2)/elapsed));
+#endif
     }
 
     /* Destroy the enclave */
     sgx_destroy_enclave(global_eid);
-    
+#ifdef VERBOSE
     printf("Info: SampleEnclave successfully returned.\n");
+#endif
+
+    printf("%d,%d,%f\n", (int) s, (int) e, (e-s));
 
     return 0;
 }

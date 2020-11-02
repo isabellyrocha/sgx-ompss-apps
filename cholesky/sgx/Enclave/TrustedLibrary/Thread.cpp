@@ -32,7 +32,7 @@
 
 #include "../Enclave.h"
 #include "Enclave_t.h"
-
+#include <mkl.h>
 #include "sgx_thread.h"
 
 static size_t global_counter = 0;
@@ -52,6 +52,19 @@ typedef struct {
 
 static cond_buffer_t buffer = {{0, 0, 0, 0, 0, 0}, 0, 0, 0,
     SGX_THREAD_MUTEX_INITIALIZER, SGX_THREAD_COND_INITIALIZER, SGX_THREAD_COND_INITIALIZER};
+
+extern "C" {
+
+void dgemm_ (const char *transa, const char *transb, int *l, int *n, int *m, double *alpha,
+             const void *a, int *lda, void *b, int *ldb, double *beta, void *c, int *ldc);
+void dtrsm_ (char *side, char *uplo, char *transa, char *diag, int *m, int *n, double *alpha,
+             double *a, int *lda, double *b, int *ldb);
+void dtrmm_ (char *side, char *uplo, char *transa, char *diag, int *m, int *n, double *alpha,
+             double *a, int *lda, double *b, int *ldb);
+void dsyrk_ (char *uplo, char *trans, int *n, int *k, double *alpha, double *a, int *lda,
+             double *beta, double *c, int *ldc);
+
+};
 
 /*
  * ecall_increase_counter:
@@ -152,4 +165,37 @@ void ecall_triad_task(double *a, double *b, double *c, double scalar, int bs)
         int j;
         for (j=0; j < bs; j++)
             a[j] = b[j]+scalar*c[j];
+}
+
+
+//#pragma omp task inout([ts][ts]A)
+void ecall_omp_potrf(double * const A, int ts, int ld)
+{
+   static int INFO;
+   static const char L = 'L';
+   dpotrf_(&L, &ts, A, &ld, &INFO);
+}
+
+//#pragma omp task in([ts][ts]A) inout([ts][ts]B)
+void ecall_omp_trsm(double *A, double *B, int ts, int ld)
+{
+   static char LO = 'L', TR = 'T', NU = 'N', RI = 'R';
+   static double DONE = 1.0;
+   dtrsm_(&RI, &LO, &TR, &NU, &ts, &ts, &DONE, A, &ld, B, &ld );
+}
+
+//#pragma omp task in([ts][ts]A) inout([ts][ts]B)
+void ecall_omp_syrk(double *A, double *B, int ts, int ld)
+{
+   static char LO = 'L', NT = 'N';
+   static double DONE = 1.0, DMONE = -1.0;
+   dsyrk_(&LO, &NT, &ts, &ts, &DMONE, A, &ld, &DONE, B, &ld );
+}
+
+//#pragma omp task in([ts][ts]A, [ts][ts]B) inout([ts][ts]C)
+void ecall_omp_gemm(double *A, double *B, double *C, int ts, int ld)
+{
+   static const char TR = 'T', NT = 'N';
+   static double DONE = 1.0, DMONE = -1.0;
+   dgemm_(&NT, &TR, &ts, &ts, &ts, &DMONE, A, &ld, B, &ld, &DONE, C, &ld);
 }
