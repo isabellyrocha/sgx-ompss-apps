@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
     double e = (double)stop.tv_sec + (double)stop.tv_usec * .000001;
     total_time = mysecond() - total_time;
 
-    printf("%d,%d,%f", (int)s, (int)e, (e-s));
+    printf("%d,%d,%f\n", (int)s, (int)e, (e-s));
     /*	--- SUMMARY --- */
 
     for (k=1; k<NTIMES; k++) /* note -- skip first iteration */ {

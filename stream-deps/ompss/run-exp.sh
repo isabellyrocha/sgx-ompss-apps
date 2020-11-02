@@ -1,6 +1,7 @@
 #!/bin/bash
 
-PROGRAM=stream-barr-p
+PROGRAM=stream-deps-p
+
 default_size=64
 default_block=16
 default_threads=1
