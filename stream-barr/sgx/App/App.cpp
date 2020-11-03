@@ -418,7 +418,7 @@ int SGX_CDECL main(int argc, char *argv[])
     // tuned_initialization
     for (j=0; j<N; j+=bs)
         //Assumes N is multiple of BSIZE
-#pragma omp task out ([bs]a, [bs]b, [bs]c)
+#pragma omp task out (a[j], b[j], c[j])
         ecall_init_task(global_eid, &a[j], &b[j], &c[j], bs);
 #pragma omp taskwait
 
@@ -432,7 +432,7 @@ int SGX_CDECL main(int argc, char *argv[])
     int j;
     for (j=0; j<N; j+=bs)
     // Assumes N is multiple of 100
-#pragma omp task in ([bs]a) out ([bs]c)        
+#pragma omp task in (a[j]) out (c[j])        
         ecall_copy_task(global_eid, &a[j], &c[j], bs);
 #else
     printf("WARNING: This version is a port to StarSs that only works for TUNED option \n");
@@ -446,7 +446,7 @@ int SGX_CDECL main(int argc, char *argv[])
     // tuned_STREAM_Scale(a, c, scalar, N, BSIZE);
         //Assumes N is multiple of 100
     for (j=0; j<N; j+=bs)
-#pragma omp task in ([bs]c ) out ([bs]b)
+#pragma omp task in (c[j]) out (b[j])
          ecall_scale_task(global_eid, &b[j], &c[j], scalar, bs);
 #else
     for (j=0; j<N; j++)
@@ -459,7 +459,7 @@ int SGX_CDECL main(int argc, char *argv[])
     // tuned_STREAM_Add(a, b, c, N, BSIZE);
     // Assumes N is multiple of 100
     for (j=0; j<N; j+=bs)
-#pragma omp task in ([bs]a, [bs]b) out ([bs]c)
+#pragma omp task in (a[j], b[j]) out (c[j])
         ecall_add_task(global_eid, &a[j], &b[j], &c[j], bs);
 #else
 	for (j=0; j<N; j++)
@@ -472,7 +472,7 @@ int SGX_CDECL main(int argc, char *argv[])
     //        tuned_STREAM_Triad(a, b, c, scalar, N, BSIZE);
     //Assumes N is multiple of 100
     for (j=0; j<N; j+=bs)
-#pragma omp task in ([bs]b, [bs]c) out ([bs]a)
+#pragma omp task in (b[j], c[j]) out (a[j])
         ecall_triad_task(global_eid, &a[j], &b[j], &c[j], scalar, bs);
 #else
     for (j=0; j<N; j++)

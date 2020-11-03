@@ -116,58 +116,6 @@ void ecall_consumer(void)
     }
 }
 
-void ecall_dot_prod(double *a,
-                    double *b,
-                    double *c, 
-                    long i,
-                    long j,
-                    long CHUNK_SIZE)
-{
-            c[j]=0;
-            for (long ii=0; ii<CHUNK_SIZE; ii++)
-                c[j]+= a[i+ii] * b[i+ii];
-}
-
-void ecall_init_task(double *a, double *b, double *c, int bs)
-{
-	int j;
-	for (j=0; j < bs; j++){
-	        a[j] = 1.0;
-	        b[j] = 2.0;
-	        c[j] = 0.0;
-		a[j] = 2.0E0 * a[j];
-  	}
-}
-
-void ecall_copy_task(double *a, double *c, int bs)
-{
-        int j;
-        for (j=0; j < bs; j++)
-                c[j] = a[j];
-}
-
-void ecall_scale_task(double *b, double *c, double scalar, int bs)
-{
-        int j;
-        for (j=0; j < bs; j++)
-            b[j] = scalar*c[j];
-}
-
-void ecall_add_task(double *a, double *b, double *c, int bs)
-{
-        int j;
-        for (j=0; j < bs; j++)
-           c[j] = a[j]+b[j];
-}
-
-void ecall_triad_task(double *a, double *b, double *c, double scalar, int bs)
-{
-        int j;
-        for (j=0; j < bs; j++)
-            a[j] = b[j]+scalar*c[j];
-}
-
-
 //#pragma omp task inout([ts][ts]A)
 void ecall_omp_potrf(double * const A, int ts, int ld)
 {

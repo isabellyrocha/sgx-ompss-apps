@@ -20,7 +20,7 @@
 #define OmpSs
 #define TUNED
 
-//#pragma omp task out ([bs]a, [bs]b, [bs]c)
+#pragma omp task out ([bs]a, [bs]b, [bs]c)
 void init_task(double *a, double *b, double *c, int bs)
 {
 	int j;	
@@ -32,7 +32,7 @@ void init_task(double *a, double *b, double *c, int bs)
   	}
 }
 
-//#pragma omp task in ([bs]a) out ([bs]c)
+#pragma omp task in ([bs]a) out ([bs]c)
 void copy_task(double *a, double *c, int bs)
 {
         int j;
@@ -40,7 +40,7 @@ void copy_task(double *a, double *c, int bs)
                 c[j] = a[j];
 }
 
-//#pragma omp task in ([bs]c ) out ([bs]b)
+#pragma omp task in ([bs]c ) out ([bs]b)
 void scale_task(double *b, double *c, double scalar, int bs)
 {
         int j;
@@ -48,7 +48,7 @@ void scale_task(double *b, double *c, double scalar, int bs)
             b[j] = scalar*c[j];
 }
 
-//#pragma omp task in ([bs]a, [bs]b) out ([bs]c)
+#pragma omp task in ([bs]a, [bs]b) out ([bs]c)
 void add_task(double *a, double *b, double *c, int bs)
 {
         int j;
@@ -56,7 +56,7 @@ void add_task(double *a, double *b, double *c, int bs)
            c[j] = a[j]+b[j];
 }
 
-//#pragma omp task in ([bs]b, [bs]c) out ([bs]a)
+#pragma omp task in ([bs]b, [bs]c) out ([bs]a)
 void triad_task(double *a, double *b, double *c, double scalar, int bs)
 {
         int j;
@@ -188,7 +188,7 @@ int main(int argc, char *argv[])
     // tuned_initialization
     for (j=0; j<N; j+=bs)
         //Assumes N is multiple of BSIZE
-#pragma omp task out ([bs]a, [bs]b, [bs]c)
+//#pragma omp task out ([bs]a, [bs]b, [bs]c)
         init_task(&a[j], &b[j], &c[j], bs);
 #pragma omp taskwait
 
@@ -202,7 +202,7 @@ int main(int argc, char *argv[])
      //  tuned_STREAM_Copy(a, c, N, BSIZE);
     int j;
     for (j=0; j<N; j+=bs)
-#pragma omp task in ([bs]a) out ([bs]c)
+//#pragma omp task in ([bs]a) out ([bs]c)
     // Assumes N is multiple of 100
         copy_task(&a[j], &c[j], bs);
 #else
@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
     // tuned_STREAM_Scale(a, c, scalar, N, BSIZE);
         //Assumes N is multiple of 100
     for (j=0; j<N; j+=bs)
-#pragma omp task in ([bs]c ) out ([bs]b)
+//#pragma omp task in ([bs]c ) out ([bs]b)
          scale_task(&b[j], &c[j], scalar, bs);
 #else
     for (j=0; j<N; j++)
@@ -230,7 +230,7 @@ int main(int argc, char *argv[])
     // tuned_STREAM_Add(a, b, c, N, BSIZE);
     // Assumes N is multiple of 100
     for (j=0; j<N; j+=bs)
-#pragma omp task in ([bs]a, [bs]b) out ([bs]c)
+//#pragma omp task in ([bs]a, [bs]b) out ([bs]c)
         add_task(&a[j], &b[j], &c[j], bs);
 #else
 	for (j=0; j<N; j++)
@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
     //        tuned_STREAM_Triad(a, b, c, scalar, N, BSIZE);
     //Assumes N is multiple of 100
     for (j=0; j<N; j+=bs)
-#pragma omp task in ([bs]b, [bs]c) out ([bs]a)
+//#pragma omp task in ([bs]b, [bs]c) out ([bs]a)
         triad_task(&a[j], &b[j], &c[j], scalar, bs);
 #else
     for (j=0; j<N; j++)
