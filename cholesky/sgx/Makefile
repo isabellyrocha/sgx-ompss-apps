@@ -140,7 +140,7 @@ endif
 Enclave_Cpp_Flags := $(Enclave_C_Flags) -nostdinc++
 
 # Enable the security flags
-Enclave_Security_Link_Flags := -Wl,-z,relro,-z,now,-z,noexecstack $(LIBS) -lpthread #-L$(MKL_LIB_DIR) -lmkl_sequential -lmkl_core -lmkl_rt -lpthread
+Enclave_Security_Link_Flags := -Wl,-z,relro,-z,now,-z,noexecstack -lpthread $(LIBS) #-L$(MKL_LIB_DIR) -lmkl_sequential -lmkl_core -lmkl_rt -lpthread
 
 # To generate a proper enclave, it is recommended to follow below guideline to link the trusted libraries:
 #    1. Link sgx_trts with the `--whole-archive' and `--no-whole-archive' options,

@@ -91,6 +91,17 @@ int munmap() {
 int syscall() {
     return 0;
 }
+int alloc_mmap() {
+    return 0;
+}
+
+int pthread_mutex_lock() {
+    return 0;
+}
+
+int pthread_mutex_unlock() {
+    return 0;
+}
 
 };
 
