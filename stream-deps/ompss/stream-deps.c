@@ -264,9 +264,9 @@ int main(int argc, char *argv[])
     }
     
     total_bytes = bytes[0] + bytes[1] + bytes [2] + bytes [3];
-//    printf ("Average Rate (MB/s): %11.4f \n", 1.0E-06 * total_bytes*NTIMES/total_time);
-//    printf ("note: in this version, the average rate per function\n");
-//    printf ("can not be provided, use tracing to check it\n");
+    printf ("Average Rate (MB/s): %11.4f \n", 1.0E-06 * total_bytes*NTIMES/total_time);
+    printf ("note: in this version, the average rate per function\n");
+    printf ("can not be provided, use tracing to check it\n");
 
 //    printf(HLINE);
 

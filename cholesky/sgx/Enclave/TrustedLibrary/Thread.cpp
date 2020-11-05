@@ -64,6 +64,34 @@ void dtrmm_ (char *side, char *uplo, char *transa, char *diag, int *m, int *n, d
 void dsyrk_ (char *uplo, char *trans, int *n, int *k, double *alpha, double *a, int *lda,
              double *beta, double *c, int *ldc);
 
+int __printf_chk() {
+    return 0;
+}
+
+int perror() {
+    return 0;
+}
+
+int puts() {
+    return 0;
+}
+
+int mmap() {
+    return 0;
+}
+
+int getenv() {
+    return 0;
+}
+
+int munmap() {
+    return 0;
+}
+
+int syscall() {
+    return 0;
+}
+
 };
 
 /*

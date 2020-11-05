@@ -32,7 +32,7 @@
 /* Thread.edl - EDL sample for trusted thread library. */
 
 enclave {
-
+//    from "sgx_tstdc.edl" import *;
     from "sgx_tstdc.edl" import sgx_thread_wait_untrusted_event_ocall, sgx_thread_set_untrusted_event_ocall, sgx_thread_setwait_untrusted_events_ocall, sgx_thread_set_multiple_untrusted_events_ocall;
 
     trusted {
@@ -50,6 +50,6 @@ enclave {
         public void ecall_omp_potrf([user_check] double *A, int ts, int ld);
         public void ecall_omp_trsm([user_check] double *A, [user_check] double *B, int ts, int ld);
         public void ecall_omp_syrk([user_check] double *A, [user_check] double *B, int ts, int ld);
-        public void omp_gemm([user_check] double *A, [user_check] double *B, [user_check] double *C, int ts, int ld);
+        public void ecall_omp_gemm([user_check] double *A, [user_check] double *B, [user_check] double *C, int ts, int ld);
     };
 };
