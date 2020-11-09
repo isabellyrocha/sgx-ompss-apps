@@ -19,7 +19,8 @@ Below are the results of experiments performed on a E3-1275 CPU with 8 cores and
 Reproduce results
 ------------------------------------
 
-# Environment Setup
+## Environment Setup
+
 - Dependecies
 ```
 $ sudo apt install automake autoconf libtool pkg-config make
