@@ -61,7 +61,42 @@ $ make install
 - Setup path
 ```
 $ export PATH=/home/ubuntu/ompss-19.06/mcxx-2.3.0/bin:$PATH
+$ source /home/ubuntu/linux-sgx/linux/installer/bin/sgxsdk/environment
 ```
 
-- Install SGX: https://github.com/intel/linux-sgx
+- Installing SGX driver
+```
+$ git clone https://github.com/intel/linux-sgx-driver.git
+//Check if matching Kernel headers are installed: 
+$ dpkg-query -s linux-headers-$(uname -r) //Check if matching Kernel headers are installed: 
+$ sudo apt-get install linux-headers-$(uname -r) //If not run this command
+$ sudo apt install make gcc // build
+$ cd linux-sgx-driver
+$ make
+$ sudo mkdir -p "/lib/modules/"`uname -r`"/kernel/drivers/intel/sgx"    
+$ sudo cp isgx.ko "/lib/modules/"`uname -r`"/kernel/drivers/intel/sgx"    
+$ sudo sh -c "cat /etc/modules | grep -Fxq isgx || echo isgx >> /etc/modules"    
+$ sudo /sbin/depmod
+$ sudo /sbin/modprobe isgx
+```
 
+- Installing SGX PSW:
+```
+$ sudo apt-get install libssl-dev libcurl4-openssl-dev protobuf-compiler libprotobuf-dev
+$ git clone https://github.com/intel/linux-sgx.git
+$ ./download_prebuilt.sh
+$ make
+$ make sdk_install_pkg
+$ make psw_install_pkg
+$ cd linux/installer/bin
+$ ./sgx_linux_x64_sdk_${version}.bin
+$ sudo apt-get install libssl-dev libcurl4-openssl-dev libprotobuf-dev
+$ sudo ./sgx_linux_x64_psw_${version}.bin
+```
+
+- Test Sample Code
+```
+$ cd SampleCode/LocalAttestation
+$ make
+$ ./app
+```
