@@ -28,7 +28,7 @@ $ sudo apt-get install libboost-all-dev
 $ sudo apt-get install -y hwloc
 $ sudo apt-get install -y numactl
 $ sudo apt-get install build-essential
-$ sudo apt installbison
+$ sudo apt install bison
 $ sudo apt-get install flex
 $ sudo apt-get install gperf
 $ sudo apt-get install libsqlite3-dev
