@@ -34,21 +34,31 @@ $ sudo apt-get install gperf
 $ sudo apt-get install libsqlite3-dev
 ```
 
-- Install Mercurium 
+- Install OmpSs
 ```
-$ git clone https://github.com/bsc-pm/mcxx.git
-$ cd mcxx
-$ autoreconf -fiv
-$ export MERCURIUM=/home/ubuntu/mcxx
-$ ./configure --prefix=$MERCURIUM --enable-nanos6-bootstrap
+$ wget https://pm.bsc.es/ftp/ompss/releases/ompss-19.06.tar.gz
+$ tar -xfzv ompss-19.06.tar.gz
+$ cd ompss-19.06/
 ```
 
 - Install Nanos
 ```
-$ git clone https://github.com/bsc-pm/nanos6.git
-$ cd nanos6
-$ autoreconf -f -i -v
-$ ./configure --prefix=/home/ubuntu/nanos6
-$ make all check
+$ cd nanox-0.15/
+$ ./configure --prefix=/home/ubuntu/ompss-19.06/nanox-0.15/
+$ make
 $ make install
+```
+
+- Install Mercurium 
+```
+$ cd mcxx-2.3.0/
+$ autoreconf -fiv
+$ ./configure --prefix=/home/ubuntu/ompss-19.06/mcxx-2.3.0/ --enable-ompss --with-nanox=/home/ubuntu/ompss-19.06/nanox-0.15
+$ make
+$ make install
+```
+
+- Setup path
+```
+$ export PATH=/home/ubuntu/ompss-19.06/mcxx-2.3.0/bin:$PATH
 ```
