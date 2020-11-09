@@ -62,3 +62,6 @@ $ make install
 ```
 $ export PATH=/home/ubuntu/ompss-19.06/mcxx-2.3.0/bin:$PATH
 ```
+
+- Install SGX: https://github.com/intel/linux-sgx
+
