@@ -23,6 +23,7 @@ Below are the results of experiments performed on a E3-1275 CPU with 8 cores and
 
 - Dependecies
 ```
+$ sudo apt install gcc-7 g++-7
 $ sudo apt install automake autoconf libtool pkg-config make
 $ sudo apt-get install libboost-all-dev
 $ sudo apt-get install -y hwloc
