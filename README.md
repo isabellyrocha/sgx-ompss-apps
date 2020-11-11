@@ -65,6 +65,16 @@ $ export PATH=/home/ubuntu/ompss-19.06/mcxx-2.3.0/bin:$PATH
 $ source /home/ubuntu/linux-sgx/linux/installer/bin/sgxsdk/environment
 ```
 
+- Install MKL
+```
+$ wget http://registrationcenter-download.intel.com/akdlm/irc_nas/tec/12147/l_mkl_2017.4.239.tgz
+$ tar xzvf l_mkl_2017.4.239.tgz
+$ cd l_mkl_2017.4.239
+$ sudo ./install_GUI.sh
+$ printf '/opt/intel/lib/intel64\n/opt/intel/mkl/lib/intel64\n' | sudo tee -a /etc/ld.so.conf.d/intel_mkl.conf
+$ sudo ldconfig
+```
+
 - Installing SGX driver
 ```
 $ git clone https://github.com/intel/linux-sgx-driver.git
