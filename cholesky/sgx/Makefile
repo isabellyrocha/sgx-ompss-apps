@@ -41,8 +41,8 @@ SGX_MODE ?= HW
 SGX_ARCH ?= x64
 SGX_DEBUG ?= 1
 #LIBS  = --Wl, -L$(MKL_LIB_DIR) -lmkl_sequential -lmkl_core -lmkl_rt -llapack -L/home/xmartorell/OpenBLAS-install/lib -lopenblas #-lblas
-LIBS = -L/home/xmartorell/OpenBLAS-install/lib -lopenblas
-INCS  = -I/home/xmartorell/OpenBLAS-install/include #-I$(MKL_INC_DIR)
+LIBS = -L/home/xmartorell/OpenBLAS-0.3.10-install/lib -lopenblas
+INCS  = -I/home/xmartorell/OpenBLAS-0.3.10-install/include #-I$(MKL_INC_DIR)
 EXTRA = -std=c99 -O3 -Wall -Wno-unused
 
 ifeq ($(shell getconf LONG_BIT), 32)

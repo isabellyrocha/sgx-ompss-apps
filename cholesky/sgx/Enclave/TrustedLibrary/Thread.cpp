@@ -34,6 +34,7 @@
 #include "Enclave_t.h"
 #include <mkl.h>
 #include "sgx_thread.h"
+//#include <sys/mman.h>
 
 static size_t global_counter = 0;
 static sgx_thread_mutex_t global_mutex = SGX_THREAD_MUTEX_INITIALIZER;
@@ -52,7 +53,7 @@ typedef struct {
 
 static cond_buffer_t buffer = {{0, 0, 0, 0, 0, 0}, 0, 0, 0,
     SGX_THREAD_MUTEX_INITIALIZER, SGX_THREAD_COND_INITIALIZER, SGX_THREAD_COND_INITIALIZER};
-
+/*
 extern "C" {
 
 void dgemm_ (const char *transa, const char *transb, int *l, int *n, int *m, double *alpha,
@@ -76,7 +77,17 @@ int puts() {
     return 0;
 }
 
-int mmap() {
+//int mmap() {
+//    for(;;);
+//    return 0;
+//}
+
+void *mmap(void *addr, size_t length, int prot, int flags,
+                  int fd, off_t offset) {
+    return 0;
+}
+
+int munmap(void *addr, size_t length) {
     return 0;
 }
 
@@ -84,9 +95,9 @@ int getenv() {
     return 0;
 }
 
-int munmap() {
-    return 0;
-}
+//int munmap() {
+//    return 0;
+//}
 
 int syscall() {
     return 0;
@@ -94,6 +105,11 @@ int syscall() {
 int alloc_mmap() {
     return 0;
 }
+
+int sched_yield() {
+    return 0;
+}
+
 
 int pthread_mutex_lock() {
     return 0;
@@ -104,7 +120,7 @@ int pthread_mutex_unlock() {
 }
 
 };
-
+*/
 /*
  * ecall_increase_counter:
  *   Utilize thread APIs inside the enclave.
@@ -160,7 +176,32 @@ void ecall_omp_potrf(double * const A, int ts, int ld)
 {
    static int INFO;
    static const char L = 'L';
+#if 0
    dpotrf_(&L, &ts, A, &ld, &INFO);
+#else
+   for (int j = 0; j < ts; ++j) {
+      for (int k = 0; k < j; ++k) {
+         A[j*ts+j] -= A[k*ts+j]*A[k*ts+j];
+      }
+      //A[j][j] = sqrt(A[j][j]);
+      double l = 0, h = A[j*ts+j], m;
+      for (int i = 0; i < 256/*max_iters_to_converge*/; ++i) {
+         m = (l+h)/2;
+         if (m*m == A[j*ts+j]) break;
+         else if (m*m > A[j*ts+j]) h = m;
+         else l = m;
+      }
+      A[j*ts+j] = m;
+
+      for (int i = j + 1; i < ts; ++i) {
+         for (int k = 0; k < j; ++k) {
+            A[j*ts+i] -= A[k*ts+i]*A[k*ts+j];
+         }
+         A[j*ts+i] /= A[j*ts+j];
+      }
+   }
+
+#endif
 }
 
 //#pragma omp task in([ts][ts]A) inout([ts][ts]B)
@@ -168,7 +209,23 @@ void ecall_omp_trsm(double *A, double *B, int ts, int ld)
 {
    static char LO = 'L', TR = 'T', NU = 'N', RI = 'R';
    static double DONE = 1.0;
+#if 0
    dtrsm_(&RI, &LO, &TR, &NU, &ts, &ts, &DONE, A, &ld, B, &ld );
+#else
+   double tmp_row[ts];
+   for (int k = 0; k < ts; ++k) {
+      double temp = 1. / A[k*ts+k];
+      for (int i__ = 0; i__ < ts; ++i__) {
+         B[k*ts+i__] = tmp_row[i__] = temp * B[k*ts+i__];
+      }
+      for (int j = k + 1 ; j < ts; ++j) {
+         temp = A[k*ts+j];
+         for (int i__ = 0; i__ < ts; ++i__) {
+            B[j*ts+i__] -= temp * tmp_row[i__];
+         }
+      }
+   }
+#endif
 }
 
 //#pragma omp task in([ts][ts]A) inout([ts][ts]B)
@@ -176,7 +233,19 @@ void ecall_omp_syrk(double *A, double *B, int ts, int ld)
 {
    static char LO = 'L', NT = 'N';
    static double DONE = 1.0, DMONE = -1.0;
+#if 0
    dsyrk_(&LO, &NT, &ts, &ts, &DMONE, A, &ld, &DONE, B, &ld );
+#else
+   for (int j = 0; j < ts; ++j) {
+      for (int i__ = j; i__ < ts; ++i__) {
+         double temp = B[j*ts+i__];
+         for (int l = 0; l < ts; ++l) {
+            temp += -A[l*ts+j] * A[l*ts+i__];
+         }
+         B[j*ts+i__] = temp;
+      }
+   }
+#endif
 }
 
 //#pragma omp task in([ts][ts]A, [ts][ts]B) inout([ts][ts]C)
@@ -184,5 +253,17 @@ void ecall_omp_gemm(double *A, double *B, double *C, int ts, int ld)
 {
    static const char TR = 'T', NT = 'N';
    static double DONE = 1.0, DMONE = -1.0;
+#if 0
    dgemm_(&NT, &TR, &ts, &ts, &ts, &DMONE, A, &ld, B, &ld, &DONE, C, &ld);
+#else
+   for (int j = 0; j < ts; ++j) {
+      for (int i__ = 0; i__ < ts; ++i__) {
+         double temp = C[j*ts+i__];
+         for (int l = 0; l < ts; ++l) {
+            temp += -B[l*ts+j] * A[l*ts+i__];
+         }
+         C[j*ts+i__] = temp;
+      }
+   }
+#endif
 }
