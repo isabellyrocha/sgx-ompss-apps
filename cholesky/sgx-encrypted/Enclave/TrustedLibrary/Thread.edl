@@ -32,7 +32,7 @@
 /* Thread.edl - EDL sample for trusted thread library. */
 
 enclave {
-
+//    from "sgx_tstdc.edl" import *;
     from "sgx_tstdc.edl" import sgx_thread_wait_untrusted_event_ocall, sgx_thread_set_untrusted_event_ocall, sgx_thread_setwait_untrusted_events_ocall, sgx_thread_set_multiple_untrusted_events_ocall;
 
     trusted {
@@ -46,14 +46,10 @@ enclave {
          */
         public void ecall_producer();
         public void ecall_consumer();
-        public void ecall_dot_prod([user_check] double *a,
-                                   [user_check] double *b,
-                                   [user_check] double *c,
-                                   long i, long j, long CHUNK_SIZE);
-        public void ecall_init_task([user_check] double *a, [user_check] double *b, [user_check] double *c, int bs);
-        public void ecall_copy_task([user_check] double *a, [user_check] double *c, int bs);
-        public void ecall_scale_task([user_check] double *b, [user_check] double *c, double scalar, int bs);
-        public void ecall_add_task([user_check] double *a, [user_check] double *b, [user_check] double *c, int bs);
-        public void ecall_triad_task([user_check] double *a, [user_check] double *b, [user_check] double *c, double scalar, int bs);
+
+        public void ecall_omp_potrf([user_check] double *A, int ts, int ld);
+        public void ecall_omp_trsm([user_check] double *A, [user_check] double *B, int ts, int ld);
+        public void ecall_omp_syrk([user_check] double *A, [user_check] double *B, int ts, int ld);
+        public void ecall_omp_gemm([user_check] double *A, [user_check] double *B, [user_check] double *C, int ts, int ld);
     };
 };

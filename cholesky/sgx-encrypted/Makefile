@@ -41,8 +41,8 @@ SGX_MODE ?= HW
 SGX_ARCH ?= x64
 SGX_DEBUG ?= 1
 #LIBS  = --Wl, -L$(MKL_LIB_DIR) -lmkl_sequential -lmkl_core -lmkl_rt -llapack -L/home/xmartorell/OpenBLAS-install/lib -lopenblas #-lblas
-LIBS = -L/home/xmartorell/OpenBLAS-install/lib -lopenblas
-INCS  = -I/home/xmartorell/OpenBLAS-install/include #-I$(MKL_INC_DIR)
+LIBS = -L/home/xmartorell/OpenBLAS-0.3.10-install/lib -lopenblas
+INCS  = -I/home/xmartorell/OpenBLAS-0.3.10-install/include #-I$(MKL_INC_DIR)
 EXTRA = -std=c99 -O3 -Wall -Wno-unused
 
 ifeq ($(shell getconf LONG_BIT), 32)
@@ -140,7 +140,7 @@ endif
 Enclave_Cpp_Flags := $(Enclave_C_Flags) -nostdinc++
 
 # Enable the security flags
-Enclave_Security_Link_Flags := -Wl,-z,relro,-z,now,-z,noexecstack $(LIBS) -lpthread #-L$(MKL_LIB_DIR) -lmkl_sequential -lmkl_core -lmkl_rt -lpthread
+Enclave_Security_Link_Flags := -Wl,-z,relro,-z,now,-z,noexecstack -lpthread $(LIBS) #-L$(MKL_LIB_DIR) -lmkl_sequential -lmkl_core -lmkl_rt -lpthread
 
 # To generate a proper enclave, it is recommended to follow below guideline to link the trusted libraries:
 #    1. Link sgx_trts with the `--whole-archive' and `--no-whole-archive' options,
@@ -156,7 +156,7 @@ Enclave_Link_Flags := $(Enclave_Security_Link_Flags) \
 	-Wl,-Bstatic -Wl,-Bsymbolic -Wl,--no-undefined \
 	-Wl,-pie,-eenclave_entry -Wl,--export-dynamic  \
 	-Wl,--defsym,__ImageBase=0 -Wl,--gc-sections   \
-	-Wl,--version-script=Enclave/Enclave.lds
+	-Wl,--version-script=Enclave/Enclave.lds -lsgx_tstdc
 
 Enclave_Cpp_Objects := $(sort $(Enclave_Cpp_Files:.cpp=.o))
 

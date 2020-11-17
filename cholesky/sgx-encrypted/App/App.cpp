@@ -170,63 +170,28 @@ void ocall_print_string(const char *str)
     printf("%s", str);
 }
 
-//#pragma omp task inout([ts][ts]A)
-void omp_potrf(double * const A, int ts, int ld)
-{
-   static int INFO;
-   static const char L = 'L';
-   dpotrf_(&L, &ts, A, &ld, &INFO);
-}
-
-//#pragma omp task in([ts][ts]A) inout([ts][ts]B)
-void omp_trsm(double *A, double *B, int ts, int ld)
-{
-   static char LO = 'L', TR = 'T', NU = 'N', RI = 'R';
-   static double DONE = 1.0;
-   dtrsm_(&RI, &LO, &TR, &NU, &ts, &ts, &DONE, A, &ld, B, &ld );
-}
-
-//#pragma omp task in([ts][ts]A) inout([ts][ts]B)
-void omp_syrk(double *A, double *B, int ts, int ld)
-{
-   static char LO = 'L', NT = 'N';
-   static double DONE = 1.0, DMONE = -1.0;
-   dsyrk_(&LO, &NT, &ts, &ts, &DMONE, A, &ld, &DONE, B, &ld );
-}
-
-//#pragma omp task in([ts][ts]A, [ts][ts]B) inout([ts][ts]C)
-void omp_gemm(double *A, double *B, double *C, int ts, int ld)
-{
-   static const char TR = 'T', NT = 'N';
-   static double DONE = 1.0, DMONE = -1.0;
-   dgemm_(&NT, &TR, &ts, &ts, &ts, &DMONE, A, &ld, B, &ld, &DONE, C, &ld);
-}
-
 //void cholesky_blocked(const int ts, const int nt, double** Ah)
 void cholesky_blocked(const int ts, const int nt, double** Ah)
 {
    for (int k = 0; k < nt; k++) {
 
       // Diagonal Block factorization
-#pragma omp task inout([ts][ts]Ah)
-      omp_potrf (Ah[k*nt+k], ts, ts);
-
+#pragma omp task inout(Ah[k*nt+k])
+      ecall_omp_potrf (global_eid,Ah[k*nt+k], ts, ts);
       // Triangular systems
       for (int i = k + 1; i < nt; i++) {
-#pragma omp task in([ts][ts]Ah) inout([ts][ts]Ah)
-         omp_trsm (Ah[k*nt+k], Ah[k*nt+k], ts, ts);
+#pragma omp task in(Ah[k*nt+k]) inout(Ah[k*nt+i])
+         ecall_omp_trsm (global_eid,Ah[k*nt+k], Ah[k*nt+i], ts, ts);
       }
-
       // Update trailing matrix
       for (int i = k + 1; i < nt; i++) {
          for (int j = k + 1; j < i; j++) {
-#pragma omp task in([ts][ts]Ah, [ts][ts]Ah) inout([ts][ts]Ah)
-            omp_gemm (Ah[k*nt+k], Ah[k*nt+k], Ah[j*nt+i], ts, ts);
+#pragma omp task in(Ah[k*nt+i], Ah[k*nt+j]) inout(Ah[j*nt+i])
+            ecall_omp_gemm (global_eid, Ah[k*nt+i], Ah[k*nt+j], Ah[j*nt+i], ts, ts);
          }
-#pragma omp task in([ts][ts]Ah) inout([ts][ts]Ah)
-         omp_syrk (Ah[k*nt+i], Ah[i*nt+i], ts, ts);
+#pragma omp task in(Ah[k*nt+i]) inout(Ah[i*nt+i])
+         ecall_omp_syrk (global_eid, Ah[k*nt+i], Ah[i*nt+i], ts, ts);
       }
-
    }
 #pragma omp taskwait
 }
@@ -345,9 +310,10 @@ int SGX_CDECL main(int argc, char *argv[])
    printf( "  time (s):             %f\n", time);
    printf( "  performance (gflops): %f\n", gflops);
    printf( "==========================================\n" );
-#else
    printf( "test:%s-%d-%d:threads:%2d:result:%s:gflops:%f\n", argv[0], n, ts, omp_get_num_threads(), result[check], gflops );
 #endif
+
+    gettimeofday(&stop,NULL);
 
    // Free blocked matrix
    for (int i = 0; i < nt*nt; i++) {
@@ -364,16 +330,15 @@ int SGX_CDECL main(int argc, char *argv[])
 /* ------------------------------------------------------------------------------------------------------------------------*/
 
 
-    gettimeofday(&stop,NULL);
     double e =(double)stop.tv_sec + (double)stop.tv_usec * .000001;
 #ifdef VERBOSE
     printf("\nMarking starting point.. Timestamp: %f.", s);
     printf("\nMarking starting point.. Timestamp: %f.", e);
     printf("\nInference completed in %f seconds.", (e-s));
-
+#endif
     elapsed = 1000000 * (stop.tv_sec - start.tv_sec);
     elapsed += stop.tv_usec - start.tv_usec;
-
+#ifdef VERBOSE
     // threads
     #ifdef OMP
         printf("threads: ");
@@ -386,6 +351,8 @@ int SGX_CDECL main(int argc, char *argv[])
     // performance in MFLOPS
     printf("MFLOPS: %lu\n", (unsigned long)((((float)n)*((float)n)*((float)n)*2)/elapsed));
 #endif
+
+    printf("%d,%d,%f\n", (int) s, (int) e, (e-s));
     }
 
     /* Destroy the enclave */
@@ -393,8 +360,6 @@ int SGX_CDECL main(int argc, char *argv[])
 #ifdef VERBOSE
     printf("Info: SampleEnclave successfully returned.\n");
 #endif
-
-    printf("%d,%d,%f\n", (int) s, (int) e, (e-s));
 
     return 0;
 }

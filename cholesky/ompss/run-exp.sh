@@ -1,8 +1,8 @@
 #!/bin/bash
 
 PROGRAM=cholesky-p
-default_size=4096
-default_block=512
+default_size=1024
+default_block=256
 default_threads=1
 default_scheduler="bf"
 
@@ -15,14 +15,14 @@ default_scheduler="bf"
 
 for iteration in {1..10};
 do
-  for size in 4096 2048 1024
+  for size in 1024 512 256
   do
     echo "ompss,size,$iteration,$size,$default_block,$default_threads,$default_scheduler,"
     NX_SMP_WORKERS=$default_threads NX_ARGS="--schedule=$default_scheduler" ./$PROGRAM $size $default_block 1
     sleep 1s
   done
 
-  for block in 4096 2048 1024
+  for block in 1024 512 256
   do
     echo "ompss,block,$iteration,$default_size,$block,$default_threads,$default_scheduler,"
     NX_SMP_WORKERS=$default_threads NX_ARGS="--schedule=$default_scheduler" ./$PROGRAM $default_size $block 1

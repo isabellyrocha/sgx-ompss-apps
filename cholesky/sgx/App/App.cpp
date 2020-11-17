@@ -14,7 +14,7 @@
 # include <unistd.h>
 # include <pwd.h>
 # define MAX_PATH FILENAME_MAX
-# define VERBOSE
+//# define VERBOSE
 #include <nanos_omp.h>
 #include "sgx_urts.h"
 #include "App.h"
@@ -178,25 +178,20 @@ void cholesky_blocked(const int ts, const int nt, double** Ah)
       // Diagonal Block factorization
 #pragma omp task inout(Ah[k*nt+k])
       ecall_omp_potrf (global_eid,Ah[k*nt+k], ts, ts);
-      printf("ecall_omp_potrf..\n");
       // Triangular systems
       for (int i = k + 1; i < nt; i++) {
 #pragma omp task in(Ah[k*nt+k]) inout(Ah[k*nt+i])
          ecall_omp_trsm (global_eid,Ah[k*nt+k], Ah[k*nt+i], ts, ts);
       }
-      printf("ecall_omp_trsm..\n");
       // Update trailing matrix
       for (int i = k + 1; i < nt; i++) {
          for (int j = k + 1; j < i; j++) {
 #pragma omp task in(Ah[k*nt+i], Ah[k*nt+j]) inout(Ah[j*nt+i])
             ecall_omp_gemm (global_eid, Ah[k*nt+i], Ah[k*nt+j], Ah[j*nt+i], ts, ts);
          }
-	 printf("ecall_omp_gemm..\n");
 #pragma omp task in(Ah[k*nt+i]) inout(Ah[i*nt+i])
          ecall_omp_syrk (global_eid, Ah[k*nt+i], Ah[i*nt+i], ts, ts);
       }
-      printf("ecall_omp_syrk..\n");
-
    }
 #pragma omp taskwait
 }
@@ -284,11 +279,9 @@ int SGX_CDECL main(int argc, char *argv[])
         }
     }
 
-   printf("Convet blocks..\n");
    const float t1 = get_time();
    cholesky_blocked(ts, nt, Ah);
 
-   printf("Convet blocks done..\n");
    const float t2 = get_time() - t1;
    //convert_to_linear(ts, nt, n, Ah, (double (*)[n]) matrix);
     for (int i = 0; i < n; i++) {

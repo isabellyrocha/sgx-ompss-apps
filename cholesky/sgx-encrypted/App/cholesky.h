@@ -1,5 +1,5 @@
 #include <math.h>
-#include <mkl.h>
+//#include <mkl.h>
 #include <sys/time.h>
 #include <sys/times.h>
 
@@ -13,6 +13,13 @@ void dtrmm_ (char *side, char *uplo, char *transa, char *diag, int *m, int *n, d
              double *a, int *lda, double *b, int *ldb);
 void dsyrk_ (char *uplo, char *trans, int *n, int *k, double *alpha, double *a, int *lda,
              double *beta, double *c, int *ldc);
+
+
+void dlacpy_(const char*, const int*, const int*, const double*, const int*, double*, const int*);
+double dlange_(char *, int *, int *, double *, int *, double *);
+void dlarnv_(int *, int *, const int *, double *);
+
+//int dlarnv_() { return 0; }
 
 };
 
