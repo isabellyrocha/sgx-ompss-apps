@@ -99,6 +99,7 @@ void ecall_dot_prod(double *a,
 {
     decrypt(a, bs);
     decrypt(b, bs);
+    decrypt(c, bs);
     c[j]=0;
     for (long ii=0; ii<bs; ii++)
         c[j]+= a[i+ii] * b[i+ii];
@@ -109,6 +110,7 @@ void ecall_dot_prod(double *a,
 
 void ecall_copy_task(double *a, double *c, long bs)
 {
+    decrypt(c, bs);
     decrypt(a, bs);
     for (int j = 0; j < bs; j++)
         c[j] = a[j];
@@ -118,6 +120,7 @@ void ecall_copy_task(double *a, double *c, long bs)
 
 void ecall_scale_task(double *b, double *c, double scalar, int bs)
 {
+    decrypt(b, bs);
     decrypt(c, bs);
     for (int j = 0; j < bs; j++)
         b[j] = scalar*c[j];
@@ -130,6 +133,7 @@ void ecall_add_task(double *a, double *b, double *c, int bs)
 {
     decrypt(a, bs);
     decrypt(b, bs);
+    decrypt(c, bs);
     for (int j = 0; j < bs; j++)
        c[j] = a[j]+b[j];
     encrypt(a, bs);
@@ -139,6 +143,7 @@ void ecall_add_task(double *a, double *b, double *c, int bs)
 
 void ecall_triad_task(double *a, double *b, double *c, double scalar, int bs)
 {
+    decrypt(a, bs);
     decrypt(b, bs);
     decrypt(c, bs);
     for (int j = 0; j < bs; j++)

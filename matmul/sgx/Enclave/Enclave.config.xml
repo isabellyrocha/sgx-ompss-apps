@@ -1,7 +1,7 @@
 <EnclaveConfiguration>
   <ProdID>0</ProdID>
   <ISVSVN>0</ISVSVN>
-  <StackMaxSize>0x4000</StackMaxSize>
+  <StackMaxSize>0x8000</StackMaxSize>
   <HeapMaxSize>0x1000000</HeapMaxSize>
   <TCSMaxNum>10000</TCSMaxNum>
   <TCSNum>10000</TCSNum>

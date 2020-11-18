@@ -14,7 +14,7 @@
 # include <unistd.h>
 # include <pwd.h>
 # define MAX_PATH FILENAME_MAX
-# define VERBOSE
+//# define VERBOSE
 #include <nanos_omp.h>
 #include "sgx_urts.h"
 #include "App.h"
