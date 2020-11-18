@@ -96,7 +96,7 @@ $ sudo apt-get install libssl-dev libcurl4-openssl-dev libprotobuf-dev
 $ sudo ./sgx_linux_x64_psw_${version}.bin
 ```
 
-Test Sample Code
+- Test Sample Code
 ```
 $ cd SampleCode/LocalAttestation
 $ make
@@ -110,8 +110,7 @@ $ source /home/ubuntu/linux-sgx/linux/installer/bin/sgxsdk/environment
 ```
 
 ## Install InfluxDB 
-> We use InfluxDB for storage of the energy measurements.
-Therefore, if you're not insterested in energy this step can be skipped.
+> We only use InfluxDB for storing the power measurements. Therefore, if you're not insterested in energy evaluation this step can be skipped.
 
 - Install and setup database
 ```Shell
