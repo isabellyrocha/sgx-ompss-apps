@@ -29,7 +29,7 @@ $ tar -xfzv ompss-19.06.tar.gz
 $ cd ompss-19.06/
 ```
 
-> Install OmpSs runtime: Nanos
+- Install OmpSs runtime: Nanos
 ```
 $ cd nanox-0.15/
 $ ./configure --prefix=/home/ubuntu/ompss-19.06/nanox-0.15/
@@ -37,7 +37,7 @@ $ make
 $ make install
 ```
 
-> Install OmpSs compiler: Mercurium 
+- Install OmpSs compiler: Mercurium 
 ```
 $ cd mcxx-2.3.0/
 $ autoreconf -fiv
@@ -69,7 +69,7 @@ $ FC=gfortran-7 CC=gcc-7 CXX=g++-7 MAX_STACK_ALLOC=16777216 NO_SHARED=1 USE_TLS=
 - SGX driver
 ```
 $ git clone https://github.com/intel/linux-sgx-driver.git
-//Check if matching Kernel headers are installed: 
+# Check if matching Kernel headers are installed: 
 $ dpkg-query -s linux-headers-$(uname -r) //Check if matching Kernel headers are installed: 
 $ sudo apt-get install linux-headers-$(uname -r) //If not run this command
 $ sudo apt install make gcc // build
