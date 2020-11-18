@@ -5,10 +5,10 @@ This repository consists of OmpSs applications integrated with SGX to extend the
 ![alt text](https://raw.githubusercontent.com/isabellyrocha/ompss-sgx-apps/master/figures/ompss_sgx_app.png)
 
 ------------------------------------
-Environment Setup
+# Environment Setup
 ------------------------------------
 
-- Dependecies
+## Install Dependecies
 ```
 $ sudo apt install gcc-7 g++-7 gfortran-7
 $ sudo apt install automake autoconf libtool pkg-config make
@@ -22,14 +22,14 @@ $ sudo apt-get install gperf
 $ sudo apt-get install libsqlite3-dev
 ```
 
-- Install OmpSs
+## Install OmpSs
 ```
 $ wget https://pm.bsc.es/ftp/ompss/releases/ompss-19.06.tar.gz
 $ tar -xfzv ompss-19.06.tar.gz
 $ cd ompss-19.06/
 ```
 
-- Install Nanos
+## Install Nanos
 ```
 $ cd nanox-0.15/
 $ ./configure --prefix=/home/ubuntu/ompss-19.06/nanox-0.15/
@@ -37,7 +37,7 @@ $ make
 $ make install
 ```
 
-- Install Mercurium 
+## Install Mercurium 
 ```
 $ cd mcxx-2.3.0/
 $ autoreconf -fiv
@@ -46,13 +46,7 @@ $ make
 $ make install
 ```
 
-- Setup path
-```
-$ export PATH=/home/ubuntu/ompss-19.06/mcxx-2.3.0/bin:$PATH
-$ source /home/ubuntu/linux-sgx/linux/installer/bin/sgxsdk/environment
-```
-
-- Install MKL
+## Install MKL
 ```
 $ wget http://registrationcenter-download.intel.com/akdlm/irc_nas/tec/12147/l_mkl_2017.4.239.tgz
 $ tar xzvf l_mkl_2017.4.239.tgz
@@ -62,7 +56,9 @@ $ printf '/opt/intel/lib/intel64\n/opt/intel/mkl/lib/intel64\n' | sudo tee -a /e
 $ sudo ldconfig
 ```
 
-- Installing SGX driver
+## Install SGX 
+
+- SGX driver
 ```
 $ git clone https://github.com/intel/linux-sgx-driver.git
 //Check if matching Kernel headers are installed: 
@@ -78,7 +74,7 @@ $ sudo /sbin/depmod
 $ sudo /sbin/modprobe isgx
 ```
 
-- Installing SGX PSW:
+- SGX PSW
 ```
 $ sudo apt-get install libssl-dev libcurl4-openssl-dev protobuf-compiler libprotobuf-dev
 $ git clone https://github.com/intel/linux-sgx.git
@@ -92,9 +88,32 @@ $ sudo apt-get install libssl-dev libcurl4-openssl-dev libprotobuf-dev
 $ sudo ./sgx_linux_x64_psw_${version}.bin
 ```
 
-- Test Sample Code
+Test Sample Code
 ```
 $ cd SampleCode/LocalAttestation
 $ make
 $ ./app
+```
+
+## Setup path for OmpSs and SGX
+```
+$ export PATH=/home/ubuntu/ompss-19.06/mcxx-2.3.0/bin:$PATH
+$ source /home/ubuntu/linux-sgx/linux/installer/bin/sgxsdk/environment
+```
+
+## Install InfluxDB 
+> We use InfluxDB for storage of the energy measurements.
+Therefore, if you're not insterested in energy this step can be skipped.
+
+- Install and setup database
+```Shell
+$ sudo apt install influxdb
+$ service influxdb start
+$ influx
+$ CREATE DATABASE energy
+```
+
+- Initiate power metrics collection
+```Shell
+$ nohup python3 $HOME/ompss-sgx-apps/monitoring/pdu_power.py <http://pdu-address> 1 &
 ```
