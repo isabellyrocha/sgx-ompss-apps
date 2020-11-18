@@ -56,6 +56,14 @@ $ printf '/opt/intel/lib/intel64\n/opt/intel/mkl/lib/intel64\n' | sudo tee -a /e
 $ sudo ldconfig
 ```
 
+## Install OpenBLAS
+```
+$ wget https://github.com/xianyi/OpenBLAS/archive/v0.3.10.tar.gz
+$ tar -xzf v0.3.10.tar.gz
+$ cd OpenBLAS-0.3.10
+$ FC=gfortran-7 CC=gcc-7 CXX=g++-7 MAX_STACK_ALLOC=16777216 NO_SHARED=1 USE_TLS=1 USE_LOCKING=0 USE_OPENMP=0 USE_THREAD=0 NO_PARALLEL_MAKE=1 make PREFIX=$HOME/OpenBLAS-0.3.10 install
+```
+
 ## Install SGX 
 
 - SGX driver
