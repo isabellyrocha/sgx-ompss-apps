@@ -29,7 +29,7 @@ $ tar -xfzv ompss-19.06.tar.gz
 $ cd ompss-19.06/
 ```
 
-## Install Nanos
+> Install OmpSs runtime: Nanos
 ```
 $ cd nanox-0.15/
 $ ./configure --prefix=/home/ubuntu/ompss-19.06/nanox-0.15/
@@ -37,7 +37,7 @@ $ make
 $ make install
 ```
 
-## Install Mercurium 
+> Install OmpSs compiler: Mercurium 
 ```
 $ cd mcxx-2.3.0/
 $ autoreconf -fiv
@@ -64,7 +64,7 @@ $ cd OpenBLAS-0.3.10
 $ FC=gfortran-7 CC=gcc-7 CXX=g++-7 MAX_STACK_ALLOC=16777216 NO_SHARED=1 USE_TLS=1 USE_LOCKING=0 USE_OPENMP=0 USE_THREAD=0 NO_PARALLEL_MAKE=1 make PREFIX=$HOME/OpenBLAS-0.3.10 install
 ```
 
-## Install SGX 
+## Install Intel Software Guard Extension (SGX) 
 
 - SGX driver
 ```
