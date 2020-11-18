@@ -14,7 +14,7 @@ def query_pdu_data(node_name, start, end):
 def pdu_energy(start, end):
     energy = 0
     #for node_name in ['eiger-7']:
-    points = query_pdu_data('eiger-7', start, end)
+    points = query_pdu_data('eiger-6', start, end)
 #    print(points)
     values = []
 
@@ -37,12 +37,11 @@ def pdu_energy(start, end):
             energy += (numpy.trapz(values))
     return energy
 
-with open("file2") as f:
-    line = f.readline()
-    while line:
-#        print(line)
-        sline = line.split(",")
-        start = sline[2]
-        end = sline[3]
-        print("%s,%s" % (line.strip(), pdu_energy(start, end)))
+for application in ["cholesky", "dot-product", "matmul", "stream-barr", "stream-deps"]:
+    with open("%s/exp.out" % application) as f:
         line = f.readline()
+        while line:
+#           print(line)
+            version, exp, it, input_size, block_size, threads, scheduler, start, end, duration = line.split(",")
+            print("%s,%s,%s" % (application, line.strip(), pdu_energy(start, end)))
+            line = f.readline()
