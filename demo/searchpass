@@ -1,0 +1,19 @@
+#!/bin/bash
+
+TMP=`tempfile`
+PID="$1"
+
+cat /proc/$PID/maps | grep -Fv ".so" | grep " 0 " | awk '{print $1}' | (
+    IFS="-"
+    while test -d /proc/$PID; do
+	read a b
+        dd if=/proc/$PID/mem \
+           bs=$( getconf PAGESIZE ) \
+           iflag=skip_bytes,count_bytes \
+           skip=$(( 0x$a )) \
+           count=$(( 0x$b - 0x$a )) \
+           of="$TMP" 2> /dev/null 1> /dev/null
+	strings "$TMP" | grep "PASSWORD"
+    done
+)
+rm "$TMP"
