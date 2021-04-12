@@ -69,9 +69,9 @@ else
         App_C_Flags += -DNDEBUG -UEDEBUG -UDEBUG
 endif
 
-App_C_Flags += $(SGX_COMMON_CFLAGS) --ompss -mcmodel=large
+App_C_Flags += $(SGX_COMMON_CFLAGS) --ompss
 
-App_Cpp_Flags := $(App_C_Flags) $(SGX_COMMON_CXXFLAGS) -std=c++11 --ompss
+App_Cpp_Flags := $(App_C_Flags) $(SGX_COMMON_CXXFLAGS)  -std=c++11 --ompss
 App_Link_Flags := -L$(SGX_LIBRARY_PATH) -l$(Urts_Library_Name) -lpthread -lm --ompss
 
 ifneq ($(SGX_MODE), HW)
@@ -237,7 +237,7 @@ $(DNET_OUT_BASE)/obj/%.o: $(DNET_OUT_BASE)/src/%.c $(DNET_DEPS_OUT)
 
 $(DNET_OUT_BASE)/obj/%.o: $(DNET_OUT_BASE)/src/%.cpp $(DNET_DEPS_OUT)
 	@echo "Creating darknet cpp objects out.."
-	@$(CXX) $(DNET_INC_OUT) $(App_Cpp_Flags) -c $< -o $@
+	@$(MCXX) $(DNET_INC_OUT) $(App_Cpp_Flags) -c $< -o $@
 
 
 					

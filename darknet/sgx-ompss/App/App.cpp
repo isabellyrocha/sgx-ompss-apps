@@ -1,3 +1,4 @@
+#include <sys/time.h>
 #include <stdio.h>
 #include <string.h>
 #include <pwd.h>
@@ -78,10 +79,22 @@ int SGX_CDECL main(int argc, char *argv[])
     image im = load_image_color(input, 0, 0);
     printf("\nInput image loaded..");
 
+    struct timeval start;
+    struct timeval stop;
+    unsigned long elapsed;
+    gettimeofday(&start,NULL);
+    double s = (double)start.tv_sec + (double)start.tv_usec * .000001;
     //classify image in enclave
-    //#pragma omp task in(sections, plist, weights, thresh, im)
+    #pragma omp task in(sections, plist, weights, thresh, im)
     ecall_classify(global_eid, sections, plist, weights, thresh, im);
     printf("\nClassification complete..");
+    gettimeofday(&stop,NULL);
+    double e =(double)stop.tv_sec + (double)stop.tv_usec * .000001;
+
+    elapsed = 1000000 * (stop.tv_sec - start.tv_sec);
+    elapsed += stop.tv_usec - start.tv_usec;
+
+    printf ("%lu;\t", elapsed);
 
     //free data
     free_image(im);
