@@ -1,0 +1,22 @@
+enclave {    
+    include "dnet_types.h"
+    
+    trusted { 
+        public void ecall_classify([user_check]list* sections, [user_check]list* labels, [user_check]char* weights, float thresh, image im);
+    };
+
+    untrusted {
+        void ocall_open_file([user_check]char* filename, flag oflag);
+        void ocall_close_file();
+
+        void ocall_fread([user_check]void *ptr, size_t size, size_t nmemb);
+        void ocall_fwrite([in,size=size,count=nmemb]void *ptr, size_t size, size_t nmemb);
+        void ocall_print_string([in, string] const char *str);
+        void ocall_free_sec([user_check]section *sec);
+        void ocall_free_list([user_check]list *list);
+
+        void ocall_timestamp_start();
+        void ocall_timestamp_end();
+
+    };
+};
